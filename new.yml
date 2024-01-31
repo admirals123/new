@@ -1,0 +1,39 @@
+name: Deploy to AKS
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Set up Azure credentials
+        uses: azure/login@v1
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+      - name: Set up AKS credentials
+        run: |
+          az aks get-credentials --resource-group <your-aks-resource-group> --name <your-aks-cluster-name>
+
+      - name: Build Docker image
+        run: |
+          # Build your Docker image using Azure Functions Core Tools or any other method
+          docker build -t <your-acr-name>.azurecr.io/<your-image-name>:latest .
+
+      - name: Push Docker image to ACR
+        run: |
+          # Push the Docker image to Azure Container Registry (ACR)
+          docker login <your-acr-name>.azurecr.io -u <your-acr-username> -p <your-acr-password>
+          docker push <your-acr-name>.azurecr.io/<your-image-name>:latest
+
+      - name: Deploy to AKS
+        run: |
+          # Use Azure CLI to deploy the container to AKS without Kubernetes manifest file
+          az aks run -g <your-aks-resource-group> -n <your-aks-cluster-name> --command-line "az container create --resource-group <your-rg> --name <your-container-name> --image <your-acr-name>.azurecr.io/<your-image-name>:latest --cpu <your-cpu-limit> --memory <your-memory-limit>"
