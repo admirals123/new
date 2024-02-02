@@ -1,31 +1,17 @@
-name: Deploy to AKS
+import pyodbc
 
-on:
-  push:
-    branches:
-      - main
+# Set your SQL Server connection details
+server = 'your_server_name'
+database = 'your_database_name'
+username = 'your_username'
+password = 'your_password'
+driver = 'ODBC Driver 17 for SQL Server'
 
-jobs:
-  deploy:
-    runs-on: ubuntu-latest
+# Establish the connection
+connection_string = f'DRIVER={{{driver}}};SERVER={server};DATABASE={database};UID={username};PWD={password};'
+connection = pyodbc.connect(connection_string)
 
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v2
+# Your SQL Server interaction code goes here...
 
-      - name: Set up Azure credentials
-        uses: azure/login@v1
-        with:
-          creds: ${{ secrets.AZURE_CREDENTIALS }}
-
-      - name: Set up AKS credentials
-        run: |
-          az aks get-credentials --resource-group <your-aks-resource-group> --name <your-aks-cluster-name>
-
-      - name: Deploy to AKS
-        run: |
-          # Use Azure CLI to deploy ACR image to AKS
-          az aks update -n <your-aks-cluster-name> -g <your-aks-resource-group> --attach-acr <your-acr-name>
-
-          # Deploy to AKS using kubectl
-          kubectl apply -f <your-k8s-manifest-file>.yaml
+# Close the connection
+connection.close()
