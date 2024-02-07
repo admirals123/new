@@ -1,25 +1,22 @@
-# Use an official Python runtime as a parent image
-FROM python:3.8-slim
-
-# Set the working directory to /app
-WORKDIR /app
+FROM debian:10
 
 # Install dependencies
-RUN apt-get update && \
-    apt-get install -y unixODBC-dev && \
-    rm -rf /var/lib/apt/lists/*
+RUN apt-get update && apt-get install -y curl apt-transport-https gnupg2 && \
+    curl https://packages.microsoft.com/keys/microsoft.asc | apt-key add - && \
+    curl https://packages.microsoft.com/config/debian/10/prod.list > /etc/apt/sources.list.d/mssql-release.list && \
+    apt-get update
 
-# Copy the current directory contents into the container at /app
-COPY . /app
+# Accept the Microsoft ODBC Driver for SQL Server End-User License Agreement (EULA)
+RUN echo "msodbcsql18 msodbcsql18/accept_eula boolean true" | debconf-set-selections
 
-# Install any needed packages specified in requirements.txt
-RUN pip install --no-cache-dir -r requirements.txt
+# Install the Microsoft ODBC Driver for SQL Server 18
+RUN apt-get install -y msodbcsql18
 
-# Make port 80 available to the world outside this container
-EXPOSE 80
+# Install the Microsoft ODBC Command Line Utilities
+RUN apt-get install -y mssql-tools
 
-# Define environment variable
-ENV NAME World
+# Clean up
+RUN apt-get clean && rm -rf /var/lib/apt/lists/*
 
-# Run app.py when the container launches
-CMD ["python", "app.py"]
+# Set environment variables for SQL Server tools
+ENV PATH="${PATH}:/opt/mssql-tools/bin"
