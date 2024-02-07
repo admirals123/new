@@ -1,13 +1,16 @@
-ACCEPT_EULA=Y apt-get install -y msodbcsql18
+# Use an appropriate base image (e.g., Debian)
+FROM debian:latest
 
-sudo su
-curl https://packages.microsoft.com/keys/microsoft.asc | apt-key add -
-curl https://packages.microsoft.com/config/debian/10/prod.list > /etc/apt/sources.list.d/mssql-release.list
-exit
+# Install OpenJDK
+RUN apt-get update && \
+    apt-get install -y openjdk-11-jdk && \
+    rm -rf /var/lib/apt/lists/*
 
-https://packages.microsoft.com/debian/10/prod/pool/main/m/msodbcsql18/msodbcsql18_18.0.1.1-1_amd64.deb
+# Set JAVA_HOME environment variable
+ENV JAVA_HOME /usr/lib/jvm/java-11-openjdk-amd64
 
-https://packages.microsoft.com/debian/10/prod/pool/main/m/mssql-tools/mssql-tools_18.9.0.0-1_amd64.deb
+# Optionally, set the PATH variable to include Java binaries
+ENV PATH $JAVA_HOME/bin:$PATH
 
-sudo dpkg -i msodbcsql18_18.0.1.1-1_amd64.deb
-sudo dpkg -i mssql-tools_18.9.0.0-1_amd64.deb
+# Verify Java installation
+RUN java -version
