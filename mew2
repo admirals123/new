@@ -4,3 +4,10 @@ sudo su
 curl https://packages.microsoft.com/keys/microsoft.asc | apt-key add -
 curl https://packages.microsoft.com/config/debian/10/prod.list > /etc/apt/sources.list.d/mssql-release.list
 exit
+
+https://packages.microsoft.com/debian/10/prod/pool/main/m/msodbcsql18/msodbcsql18_18.0.1.1-1_amd64.deb
+
+https://packages.microsoft.com/debian/10/prod/pool/main/m/mssql-tools/mssql-tools_18.9.0.0-1_amd64.deb
+
+sudo dpkg -i msodbcsql18_18.0.1.1-1_amd64.deb
+sudo dpkg -i mssql-tools_18.9.0.0-1_amd64.deb
