@@ -1,17 +1,19 @@
-import pyodbc
+FROM ubuntu:18.04
 
-# Set your SQL Server connection details
-server = 'your_server_name'
-database = 'your_database_name'
-username = 'your_username'
-password = 'your_password'
-driver = 'ODBC Driver 17 for SQL Server'
+RUN apt update -y && apt upgrade -y && apt-get update
+RUN apt install -y curl python3.7 git python3-pip openjdk-8-jdk unixodbc-dev
 
-# Establish the connection
-connection_string = f'DRIVER={{{driver}}};SERVER={server};DATABASE={database};UID={username};PWD={password};'
-connection = pyodbc.connect(connection_string)
+# Add SQL Server ODBC Driver 18 for Ubuntu 18.04
+RUN curl -O https://download.microsoft.com/download/3/5/5/355d7943-a338-41a7-858d-53b259ea33f5/msodbcsql18_18.3.2.1-1_amd64.apk
+RUN curl -O https://download.microsoft.com/download/3/5/5/355d7943-a338-41a7-858d-53b259ea33f5/mssql-tools18_18.3.1.1-1_amd64.apk
 
-# Your SQL Server interaction code goes here...
+# (Optional) Verify the signature
+curl -O https://download.microsoft.com/download/3/5/5/355d7943-a338-41a7-858d-53b259ea33f5/msodbcsql18_18.3.2.1-1_amd64.sig
+curl -O https://download.microsoft.com/download/3/5/5/355d7943-a338-41a7-858d-53b259ea33f5/mssql-tools18_18.3.1.1-1_amd64.sig
+curl https://packages.microsoft.com/keys/microsoft.asc | gpg --import
+gpg --verify msodbcsql18_18.3.2.1-1_amd64.sig msodbcsql18_18.3.2.1-1_amd64.apk
+gpg --verify mssql-tools18_18.3.1.1-1_amd64.sig mssql-tools18_18.3.1.1-1_amd64.apk
 
-# Close the connection
-connection.close()
+# Install the packages
+sudo apk add --allow-untrusted msodbcsql18_18.3.2.1-1_amd64.apk
+sudo apk add --allow-untrusted mssql-tools18_18.3.1.1-1_amd64.apk
