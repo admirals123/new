@@ -1,19 +1,16 @@
-FROM ubuntu:18.04
+Subject: Request for LMIA Application Assistance
 
-RUN apt update -y && apt upgrade -y && apt-get update
-RUN apt install -y curl python3.7 git python3-pip openjdk-8-jdk unixodbc-dev
+Dear [HR Manager's Name],
 
-# Add SQL Server ODBC Driver 18 for Ubuntu 18.04
-RUN curl -O https://download.microsoft.com/download/3/5/5/355d7943-a338-41a7-858d-53b259ea33f5/msodbcsql18_18.3.2.1-1_amd64.apk
-RUN curl -O https://download.microsoft.com/download/3/5/5/355d7943-a338-41a7-858d-53b259ea33f5/mssql-tools18_18.3.1.1-1_amd64.apk
+I hope this email finds you well. I am writing to discuss the possibility of our company, Manulife, providing an LMIA (Labour Market Impact Assessment) for my current employment situation.
 
-# (Optional) Verify the signature
-curl -O https://download.microsoft.com/download/3/5/5/355d7943-a338-41a7-858d-53b259ea33f5/msodbcsql18_18.3.2.1-1_amd64.sig
-curl -O https://download.microsoft.com/download/3/5/5/355d7943-a338-41a7-858d-53b259ea33f5/mssql-tools18_18.3.1.1-1_amd64.sig
-curl https://packages.microsoft.com/keys/microsoft.asc | gpg --import
-gpg --verify msodbcsql18_18.3.2.1-1_amd64.sig msodbcsql18_18.3.2.1-1_amd64.apk
-gpg --verify mssql-tools18_18.3.1.1-1_amd64.sig mssql-tools18_18.3.1.1-1_amd64.apk
+As you may be aware, an LMIA is a crucial document required for certain immigration processes, including work permit applications. Given my role within the company and the potential benefits to both myself and Manulife, I believe obtaining an LMIA could greatly facilitate my continued employment here.
 
-# Install the packages
-sudo apk add --allow-untrusted msodbcsql18_18.3.2.1-1_amd64.apk
-sudo apk add --allow-untrusted mssql-tools18_18.3.1.1-1_amd64.apk
+I have thoroughly researched the requirements and processes involved in obtaining an LMIA, and I am prepared to provide any necessary documentation or information to support the application process. Additionally, I am more than willing to work closely with the HR department and any other relevant stakeholders to ensure a smooth and efficient application process.
+
+I understand that this request may require careful consideration and coordination, and I am available to discuss any questions or concerns you may have. Your assistance in this matter would be greatly appreciated, and I am confident that obtaining an LMIA would be mutually beneficial for both parties.
+
+Thank you for your attention to this matter. I look forward to your response and the opportunity to further discuss how we can proceed with this request.
+
+Best regards,
+[Your Name]
