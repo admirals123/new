@@ -1,31 +1,17 @@
-apiVersion: apps/v1
-kind: Deployment
-metadata:
-  name: example-deployment
-spec:
-  replicas: 3
-  selector:
-    matchLabels:
-      app: example
-  template:
-    metadata:
-      labels:
-        app: example
-    spec:
-      containers:
-      - name: example-container
-        image: your-image:tag
-        ports:
-        - containerPort: 8080
-        livenessProbe:
-          httpGet:
-            path: /healthz
-            port: 8080
-          initialDelaySeconds: 15
-          periodSeconds: 10
-        readinessProbe:
-          httpGet:
-            path: /healthz
-            port: 8080
-          initialDelaySeconds: 5
-          periodSeconds: 5
+# Use the latest official Redis image as the base image
+FROM redis:latest
+
+# Update package lists and install the package containing redis-cli
+RUN apt-get update && \
+    apt-get install -y redis-server && \
+    apt-get install -y --no-install-recommends gnupg2 dirmngr && \
+    echo "deb http://deb.debian.org/debian stretch main" >> /etc/apt/sources.list && \
+    apt-get update && \
+    apt-get install -y redis-tools && \
+    rm -rf /var/lib/apt/lists/*
+
+# Expose Redis port
+EXPOSE 6379
+
+# Start Redis server when the container starts
+CMD ["redis-server"]
