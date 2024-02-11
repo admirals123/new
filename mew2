@@ -1,16 +1,21 @@
-# Use an appropriate base image (e.g., Debian)
-FROM debian:latest
+# app.py
+import redis
 
-# Install OpenJDK
-RUN apt-get update && \
-    apt-get install -y openjdk-11-jdk && \
-    rm -rf /var/lib/apt/lists/*
+# Configure your Redis connection here
+REDIS_HOST = 'your_redis_host'
+REDIS_PORT = 6379
+REDIS_PASSWORD = 'your_redis_password'  # Leave as None if no password
 
-# Set JAVA_HOME environment variable
-ENV JAVA_HOME /usr/lib/jvm/java-11-openjdk-amd64
+def check_redis_connection():
+    try:
+        # Connect to Redis
+        r = redis.Redis(host=REDIS_HOST, port=REDIS_PORT, password=REDIS_PASSWORD, decode_responses=True)
+        
+        # Attempt a simple command
+        r.ping()
+        print("Successfully connected to the Redis database.")
+    except redis.ConnectionError:
+        print("Failed to connect to the Redis database.")
 
-# Optionally, set the PATH variable to include Java binaries
-ENV PATH $JAVA_HOME/bin:$PATH
-
-# Verify Java installation
-RUN java -version
+if __name__ == "__main__":
+    check_redis_connection()
