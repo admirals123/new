@@ -5,3 +5,25 @@ RUN echo "deb [7](https://www.docker.com/blog/how-to-use-the-redis-docker-offici
 RUN apt-get update && apt-get install -y redis=7.0.5-1~focal1
 EXPOSE 6379
 CMD ["redis-server"]
+
+
+
+
+import redis
+
+# Azure Redis Cache details
+hostname = 'your-azure-redis-cache-name.redis.cache.windows.net'  # Replace with your hostname
+port = 6380  # Default SSL port for Azure Redis Cache
+password = 'your-access-key'  # Replace with your primary or secondary access key
+
+# Connect to Azure Redis Cache
+# Note: SSL connection is required for Azure Redis Cache
+r = redis.Redis(host=hostname, port=port, password=password, ssl=True, ssl_cert_reqs=None)
+
+# Example operations
+# Set a key
+r.set('mykey', 'Hello from Azure Redis Cache!')
+
+# Retrieve the value of a key
+value = r.get('mykey')
+print(f"The value of 'mykey' is: {value.decode('utf-8')}")
