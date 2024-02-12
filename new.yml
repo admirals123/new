@@ -7,7 +7,7 @@ EXPOSE 6379
 CMD ["redis-server"]
 
 
-
+https://us04web.zoom.us/j/75953051069?pwd=gNQzplEeqazQAeL01qhwatbTy9W2HR.1
 
 import redis
 
