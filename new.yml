@@ -27,3 +27,38 @@ r.set('mykey', 'Hello from Azure Redis Cache!')
 # Retrieve the value of a key
 value = r.get('mykey')
 print(f"The value of 'mykey' is: {value.decode('utf-8')}")
+
+
+
+# Use an official Python runtime as a parent image
+FROM python:3.8-slim
+
+# Set the working directory in the container
+WORKDIR /usr/src/app
+
+# Copy the current directory contents into the container at /usr/src/app
+COPY . .
+
+# Install any needed packages specified in requirements.txt
+RUN pip install --no-cache-dir -r requirements.txt
+
+# Run app.py when the container launches
+CMD ["python", "./app.py"]
+
+
+
+
+import redis
+
+# Connect to the Redis cache
+redis_host = "<your_cache_name>.redis.cache.windows.net"
+redis_password = "<your_primary_key>"
+redis_port = "<your_ssl_port>"
+
+r = redis.StrictRedis(host=redis_host, port=redis_port, password=redis_password, ssl=True)
+
+# Set a test value in Redis
+r.set('test', 'Hello, Redis!')
+
+# Retrieve and print the value
+print(r.get('test').decode("utf-8"))
