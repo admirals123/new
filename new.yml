@@ -73,3 +73,54 @@ dism.exe /online /enable-feature /featurename:Microsoft-Windows-Subsystem-Linux 
 
 dism.exe /online /enable-feature /featurename:VirtualMachinePlatform /all /norestart
 
+
+
+Setting up Windows Subsystem for Linux (WSL) allows you to run a Linux environment directly on Windows, without the overhead of a traditional virtual machine or dual-boot setup. Here's how to set it up:
+
+### Step 1: Enable the Windows Subsystem for Linux
+
+1. **Open PowerShell as Administrator**: Press `Windows + X` and select "Windows PowerShell (Admin)" or "Command Prompt (Admin)".
+2. **Enable WSL**: Type the following command and press Enter:
+   ```powershell
+   dism.exe /online /enable-feature /featurename:Microsoft-Windows-Subsystem-Linux /all /norestart
+   ```
+
+### Step 2: Enable Virtual Machine Platform (Optional for WSL 2)
+
+1. **Enable Virtual Machine Platform**: Still in PowerShell, run the following command:
+   ```powershell
+   dism.exe /online /enable-feature /featurename:VirtualMachinePlatform /all /norestart
+   ```
+2. **Restart your computer** to complete the WSL install and update to WSL 2.
+
+### Step 3: Set WSL 2 as Your Default Version (Optional)
+
+After restarting, set WSL 2 as the default version when installing new Linux distributions:
+
+```powershell
+wsl --set-default-version 2
+```
+
+### Step 4: Install a Linux Distribution
+
+1. **Open the Microsoft Store**: Search for your favorite Linux distribution (e.g., Ubuntu, Debian, Fedora).
+2. **Select and Install**: Click on the Linux distribution of your choice and click "Install".
+
+### Step 5: Set up Your Linux Distribution
+
+1. **Launch the Linux Distribution**: After installation, launch it from the Start menu.
+2. **Create a User Account and Password**: The first time you launch a newly installed Linux distribution, a console window will open, and you'll need to wait for files to decompress and be stored on your PC. Afterward, you'll be prompted to create a user account and password for your new Linux distribution.
+
+### Step 6: Update and Upgrade Your Linux Distribution
+
+To ensure all packages are up to date, run the following commands in your Linux console:
+
+```bash
+sudo apt update && sudo apt upgrade
+```
+
+### Additional Steps for WSL 2
+
+If you specifically need WSL 2 for its performance and full system call compatibility, make sure your Windows version supports it and you've completed the Virtual Machine Platform step. You might also need to download and install the Linux kernel update package from the Microsoft website if your setup requires it.
+
+That's the basic process! After setup, you can use your Linux distribution through the Windows terminal, PowerShell, or any terminal emulator you prefer.
