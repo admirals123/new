@@ -124,3 +124,30 @@ sudo apt update && sudo apt upgrade
 If you specifically need WSL 2 for its performance and full system call compatibility, make sure your Windows version supports it and you've completed the Virtual Machine Platform step. You might also need to download and install the Linux kernel update package from the Microsoft website if your setup requires it.
 
 That's the basic process! After setup, you can use your Linux distribution through the Windows terminal, PowerShell, or any terminal emulator you prefer.
+
+
+
+
+
+# Use an official Python runtime as a parent image
+FROM python:3.8-slim
+
+# Set the working directory in the container
+WORKDIR /usr/src/app
+
+# Install redis-tools for redis-cli
+RUN apt-get update && apt-get install -y redis-tools
+
+# Copy the current directory contents into the container at /usr/src/app
+COPY . .
+
+# Make port 80 available to the world outside this container
+EXPOSE 80
+
+# Define environment variable (use these in your application)
+ENV REDIS_HOST=your_redis_cache_hostname.redis.cache.windows.net
+ENV REDIS_PORT=6380
+ENV REDIS_PASSWORD=your_access_key
+
+# Run your application using CMD command
+CMD ["python", "./your-app.py"]
