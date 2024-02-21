@@ -19,3 +19,6 @@ def check_redis_connection():
 
 if __name__ == "__main__":
     check_redis_connection()
+
+
+/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
