@@ -10,3 +10,5 @@ app.post('/redis', async (req, res) => {
         console.log('Connection closed');
     });
 });
+
+curl -X POST -H "Content-Type: application/json" -d '{"key": "test", "value": "demo-entry"}' http://localhost:3000/redis
