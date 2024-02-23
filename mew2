@@ -1,24 +1,12 @@
-# app.py
-import redis
-
-# Configure your Redis connection here
-REDIS_HOST = 'your_redis_host'
-REDIS_PORT = 6379
-REDIS_PASSWORD = 'your_redis_password'  # Leave as None if no password
-
-def check_redis_connection():
-    try:
-        # Connect to Redis
-        r = redis.Redis(host=REDIS_HOST, port=REDIS_PORT, password=REDIS_PASSWORD, decode_responses=True)
-        
-        # Attempt a simple command
-        r.ping()
-        print("Successfully connected to the Redis database.")
-    except redis.ConnectionError:
-        print("Failed to connect to the Redis database.")
-
-if __name__ == "__main__":
-    check_redis_connection()
-
-
-/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+app.post('/redis', async (req, res) => {
+    const { key, value } = req.body;
+    if (!key || !value) {
+        return res.status(400).send('Key and value are required');
+    }
+    await client.connect();
+    client.set(key, value, redis.print);
+    res.send('Data added successfully');
+    client.quit((err, res) => {
+        console.log('Connection closed');
+    });
+});
