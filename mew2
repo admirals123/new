@@ -1,3 +1,6 @@
+curl -X POST -H "Content-Type: application/json" -d '{"key": "exampleKey", "value": "exampleValue"}' http://localhost:3000/redis
+
+
 app.post('/redis', async (req, res) => {
     const { key, value } = req.body;
     if (!key || !value) {
