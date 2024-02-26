@@ -1,3 +1,6 @@
+
+https://us06web.zoom.us/j/7756101766?pwd=VG9KY3VDUUtjWmlkZ1Rlc2xDODBLQT09
+
 curl -X POST -H "Content-Type: application/json" -d '{"key": "exampleKey", "value": "exampleValue"}' http://localhost:3000/redis
 
 
