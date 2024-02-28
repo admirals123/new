@@ -1,0 +1,92 @@
+const express = require('express');
+const redis = require("redis");
+const { Connection } = require('tedious');
+const { Request } = require('tedious');
+
+const app = express();
+app.use(express.json());
+
+// Function to create a connection to the Redis server using Active Directory authentication
+function createRedisConnection() {
+    const config = {
+        server: 'your-redis-host', // Update with your Redis server hostname or IP address
+        options: {
+            encrypt: true, // Enable encryption
+            trustServerCertificate: true, // Trust the server certificate
+            authentication: {
+                type: 'ActiveDirectoryDefault' // Use Active Directory authentication
+            }
+        }
+    };
+
+    const connection = new Connection(config);
+    return connection;
+}
+
+// Route to retrieve data from Redis
+app.get('/retrieve', async (req, res) => {
+    const connection = createRedisConnection();
+
+    connection.on('connect', async (err) => {
+        if (err) {
+            console.error("Error connecting to Redis:", err);
+            res.status(500).send("Error connecting to Redis");
+        } else {
+            const keysQuery = "KEYS *";
+            const request = new Request(keysQuery, (err, rowCount, rows) => {
+                if (err) {
+                    console.error("Error executing query:", err);
+                    res.status(500).send("Error retrieving data from Redis");
+                } else {
+                    const data = rows.map(row => {
+                        return {
+                            key: row[0].value,
+                            value: row[1].value
+                        };
+                    });
+                    console.log("Data from Redis:", data);
+                    res.json(data);
+                }
+                connection.close();
+            });
+
+            connection.execSql(request);
+        }
+    });
+});
+
+// Route to add data to Redis
+app.post('/redis', async (req, res) => {
+    const { key, value } = req.body;
+    if (!key || !value) {
+        return res.status(400).send('Key and value are required');
+    }
+
+    const connection = createRedisConnection();
+
+    connection.on('connect', async (err) => {
+        if (err) {
+            console.error("Error connecting to Redis:", err);
+            res.status(500).send("Error connecting to Redis");
+        } else {
+            const setQuery = `SET ${key} ${value}`;
+            const request = new Request(setQuery, (err) => {
+                if (err) {
+                    console.error("Error executing query:", err);
+                    res.status(500).send("Error adding data to Redis");
+                } else {
+                    console.log("Data added successfully");
+                    res.send('Data added successfully');
+                }
+                connection.close();
+            });
+
+            connection.execSql(request);
+        }
+    });
+});
+
+const PORT = 4000;
+app.listen(PORT, () => {
+    console.log("Server Listening on PORT:", PORT);
+});
