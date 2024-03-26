@@ -1,21 +1,22 @@
-Subject: Request for Information Regarding LMIA Process
+import redis.clients.jedis.Jedis;
 
-Dear [HR Manager's Name],
+public class RedisExample {
+    public static void main(String[] args) {
+        // Replace these values with your Azure Redis Cache details
+        String hostname = "your-redis-hostname.redis.cache.windows.net";
+        String password = "your-redis-access-key";
+        int port = 6379;
 
-I hope this email finds you well. I am writing to inquire about the LMIA (Labour Market Impact Assessment) process and the support that Manulife provides in obtaining LMIA for employees.
+        // Connect to Azure Redis Cache
+        Jedis jedis = new Jedis(hostname, port);
+        jedis.auth(password);
 
-As I am considering certain opportunities within the company that may require LMIA sponsorship, I would greatly appreciate it if you could provide me with information regarding:
+        // Perform operations
+        jedis.set("key1", "value1");
+        String value = jedis.get("key1");
+        System.out.println("Value for key1: " + value);
 
-1. The company's policy and process for sponsoring LMIA for employees.
-2. Any resources or assistance available to employees in navigating the LMIA application process.
-3. Any specific requirements or criteria for employees seeking LMIA sponsorship.
-
-Understanding these aspects would greatly assist me in making informed decisions regarding my career path within the organization.
-
-Thank you for your attention to this matter. I look forward to hearing from you soon.
-
-Best regards,
-
-[Your Name]
-[Your Position/Department]
-[Your Contact Information]
+        // Close connection
+        jedis.close();
+    }
+}
