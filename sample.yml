@@ -1,22 +1,29 @@
-import redis.clients.jedis.Jedis;
+const { ServiceBusClient } = require("@azure/service-bus");
 
-public class RedisExample {
-    public static void main(String[] args) {
-        // Replace these values with your Azure Redis Cache details
-        String hostname = "your-redis-hostname.redis.cache.windows.net";
-        String password = "your-redis-access-key";
-        int port = 6379;
+// Service Bus namespace and queue details
+const connectionString = "YOUR_SERVICE_BUS_CONNECTION_STRING";
+const queueName = "YOUR_QUEUE_NAME";
 
-        // Connect to Azure Redis Cache
-        Jedis jedis = new Jedis(hostname, port);
-        jedis.auth(password);
+// Message to send
+const messageBody = "Hello from Node.js!";
 
-        // Perform operations
-        jedis.set("key1", "value1");
-        String value = jedis.get("key1");
-        System.out.println("Value for key1: " + value);
+async function main() {
+  const serviceBusClient = new ServiceBusClient(connectionString);
+  const sender = serviceBusClient.createSender(queueName);
 
-        // Close connection
-        jedis.close();
-    }
+  try {
+    const message = {
+      body: messageBody
+    };
+
+    await sender.sendMessages(message);
+    console.log("Message sent successfully!");
+  } finally {
+    await sender.close();
+    await serviceBusClient.close();
+  }
 }
+
+main().catch((err) => {
+  console.log("Error occurred:", err);
+});
