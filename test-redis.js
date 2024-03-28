@@ -72,4 +72,8 @@ const server = app.listen(port, () => {
 
 
 
+
+https://us06web.zoom.us/j/82612780741?pwd=7K4UXKesbxcqlOAsc3rsbaHf6dl1Sb.1
+
+
 http://us-east-1.console.aws.amazon.com/msk/home?region=us-east-1#/cluster/arn%3aws%3Akafka%3Aus-east-1%3817265962114%3Acluster%2Fus-prod%2Ff5d7cb21-0796-4018-8927-d4930141200b-12/view?tabld=properties
