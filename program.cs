@@ -8,71 +8,37 @@ class Program
     static async Task Main(string[] args)
     {
         ServiceBusClient client; // Declare the client variable
-        ServiceBusProcessor processor; // Declare the processor variable
-
-        // The Service Bus client types are safe to cache and use as a singleton for the lifetime
-        // of the application, which is best practice when messages are being published or read
-        // regularly.
-        //
-        // Set the transport type to AmqpWebSockets so that the ServiceBusClient uses port 443. 
-        // If you use the default AmqpTcp, make sure that ports 5671 and 5672 are open.
+        ServiceBusSender sender; // Declare the sender variable
 
         // TODO: Replace the <NAMESPACE-NAME> placeholder
-        var clientOptions = new ServiceBusClientOptions()
-        {
-            TransportType = ServiceBusTransportType.AmqpWebSockets
-        };
-
-        // Replace "<NAMESPACE-NAME>" with your Service Bus namespace name
         string fullyQualifiedNamespace = "<NAMESPACE-NAME>.servicebus.windows.net";
 
         // Create a new instance of the ManagedIdentityCredential class
         ManagedIdentityCredential managedIdentityCredential = new ManagedIdentityCredential();
 
         // Create a new instance of ServiceBusClient using ManagedIdentityCredential
-        client = new ServiceBusClient(fullyQualifiedNamespace, managedIdentityCredential, clientOptions);
+        client = new ServiceBusClient(fullyQualifiedNamespace, managedIdentityCredential);
 
-        // create a processor that we can use to process the messages
+        // Create a new instance of ServiceBusSender
         // TODO: Replace the <QUEUE-NAME> placeholder
-        processor = client.CreateProcessor("<QUEUE-NAME>", new ServiceBusProcessorOptions());
+        sender = client.CreateSender("<QUEUE-NAME>");
 
         try
         {
-            // add handler to process messages
-            processor.ProcessMessageAsync += MessageHandler;
+            // Prepare a message
+            ServiceBusMessage message = new ServiceBusMessage("Hello, Service Bus!");
 
-            // add handler to process any errors
-            processor.ProcessErrorAsync += ErrorHandler;
+            // Send the message to the queue
+            await sender.SendMessageAsync(message);
 
-            // start processing 
-            await processor.StartProcessingAsync();
-
-            Console.WriteLine("Wait for a minute and then press any key to end the processing");
-            Console.ReadKey();
-
-            // stop processing 
-            Console.WriteLine("\nStopping the receiver...");
-            await processor.StopProcessingAsync();
-            Console.WriteLine("Stopped receiving messages");
+            Console.WriteLine("Message sent successfully!");
         }
         finally
         {
             // Calling DisposeAsync on client types is required to ensure that network
             // resources and other unmanaged objects are properly cleaned up.
-            await processor.DisposeAsync();
+            await sender.DisposeAsync();
             await client.DisposeAsync();
         }
-    }
-
-    static async Task MessageHandler(ProcessMessageEventArgs args)
-    {
-        // Process the message here
-        await Task.CompletedTask;
-    }
-
-    static async Task ErrorHandler(ProcessErrorEventArgs args)
-    {
-        // Handle errors here
-        await Task.CompletedTask;
     }
 }
