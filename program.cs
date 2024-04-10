@@ -1,44 +1,26 @@
+using System;
 using Azure.Identity;
 using Azure.Messaging.ServiceBus;
-using System;
-using System.Threading.Tasks;
 
-class Program
+namespace ManagedIdentityExample
 {
-    static async Task Main(string[] args)
+    class Program
     {
-        ServiceBusClient client; // Declare the client variable
-        ServiceBusSender sender; // Declare the sender variable
-
-        // TODO: Replace the <NAMESPACE-NAME> placeholder
-        string fullyQualifiedNamespace = "<NAMESPACE-NAME>.servicebus.windows.net";
-
-        // Create a new instance of the ManagedIdentityCredential class
-        ManagedIdentityCredential managedIdentityCredential = new ManagedIdentityCredential();
-
-        // Create a new instance of ServiceBusClient using ManagedIdentityCredential
-        client = new ServiceBusClient(fullyQualifiedNamespace, managedIdentityCredential);
-
-        // Create a new instance of ServiceBusSender
-        // TODO: Replace the <QUEUE-NAME> placeholder
-        sender = client.CreateSender("<QUEUE-NAME>");
-
-        try
+        static void Main(string[] args)
         {
-            // Prepare a message
-            ServiceBusMessage message = new ServiceBusMessage("Hello, Service Bus!");
+            // 1. Create a ServiceBusClient using the DefaultAzureCredential
+            DefaultAzureCredential credential = new DefaultAzureCredential();
+            string serviceBusConnectionString = "Endpoint=sb://<your-service-bus-namespace>.servicebus.windows.net/;EntityPath=<your-queue-name>";
+            ServiceBusClient client = new ServiceBusClient(serviceBusConnectionString, credential);
 
-            // Send the message to the queue
-            await sender.SendMessageAsync(message);
+            // 2. Create a sender or receiver using the client
+            ServiceBusSender sender = client.CreateSender("<your-queue-name>");
 
-            Console.WriteLine("Message sent successfully!");
-        }
-        finally
-        {
-            // Calling DisposeAsync on client types is required to ensure that network
-            // resources and other unmanaged objects are properly cleaned up.
-            await sender.DisposeAsync();
-            await client.DisposeAsync();
-        }
-    }
-}
+            // 3. Send a message using the sender
+            string messageBody = "Hello from managed identity!";
+            ServiceBusMessage message = new ServiceBusMessage(messageBody);
+            sender.SendMessageAsync(message);
+            Console.WriteLine($"Sent message: {messageBody}");
+
+            // 4. Close the client and sender to clean up resources
+            sender.Close
