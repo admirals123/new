@@ -1,29 +1,44 @@
-const { ServiceBusClient } = require("@azure/service-bus");
+using System;
+using System.Threading.Tasks;
+using Azure.Identity;
+using Azure.Messaging.ServiceBus;
 
-// Service Bus namespace and queue details
-const connectionString = "YOUR_SERVICE_BUS_CONNECTION_STRING";
-const queueName = "YOUR_QUEUE_NAME";
+namespace ServiceBusManagedIdentityDemo
+{
+    class Program
+    {
+        // The Service Bus namespace connection string
+        private static readonly string ServiceBusNamespace = "<your-service-bus-namespace>.servicebus.windows.net";
+        // The Service Bus queue name
+        private static readonly string QueueName = "<your-queue-name>";
 
-// Message to send
-const messageBody = "Hello from Node.js!";
+        static async Task Main(string[] args)
+        {
+            // Create a ServiceBusClient that will authenticate through Managed Identity
+            var client = new ServiceBusClient(ServiceBusNamespace, new DefaultAzureCredential());
 
-async function main() {
-  const serviceBusClient = new ServiceBusClient(connectionString);
-  const sender = serviceBusClient.createSender(queueName);
+            // Create a sender for the queue
+            ServiceBusSender sender = client.CreateSender(QueueName);
 
-  try {
-    const message = {
-      body: messageBody
-    };
+            // Create a message that we can send
+            ServiceBusMessage message = new ServiceBusMessage("Hello, Service Bus!");
 
-    await sender.sendMessages(message);
-    console.log("Message sent successfully!");
-  } finally {
-    await sender.close();
-    await serviceBusClient.close();
-  }
+            // Send the message
+            await sender.SendMessageAsync(message);
+            Console.WriteLine($"Sent a single message to the queue: {QueueName}");
+
+            // Create a receiver that we can use to receive the message
+            ServiceBusReceiver receiver = client.CreateReceiver(QueueName);
+
+            // Receive the message
+            ServiceBusReceivedMessage receivedMessage = await receiver.ReceiveMessageAsync();
+            string body = receivedMessage.Body.ToString();
+            Console.WriteLine($"Received: {body}");
+
+            // Close the sender, receiver, and client
+            await sender.DisposeAsync();
+            await receiver.DisposeAsync();
+            await client.DisposeAsync();
+        }
+    }
 }
-
-main().catch((err) => {
-  console.log("Error occurred:", err);
-});
