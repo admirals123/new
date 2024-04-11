@@ -16,9 +16,13 @@ class Program
             var azureServiceTokenProvider = new AzureServiceTokenProvider();
             var token = await azureServiceTokenProvider.GetAccessTokenAsync("https://servicebus.azure.net");
 
-            // Get the Azure AD tenant ID
-            string authority = azureServiceTokenProvider.TenantId != null ?
-                $"https://login.microsoftonline.com/{azureServiceTokenProvider.TenantId}" :
+            // Extract the Azure AD tenant ID from the access token
+            var jwtToken = new System.IdentityModel.Tokens.Jwt.JwtSecurityToken(token);
+            string tenantId = jwtToken.Claims.FirstOrDefault(c => c.Type == "tid")?.Value;
+
+            // Construct the authority using the tenant ID
+            string authority = tenantId != null ?
+                $"https://login.microsoftonline.com/{tenantId}" :
                 null;
 
             // Create a token provider based on the acquired token
