@@ -17,7 +17,7 @@ class Program
             var token = await azureServiceTokenProvider.GetAccessTokenAsync("https://servicebus.azure.net");
 
             // Create a token provider based on the acquired token
-            var tokenProvider = TokenProvider.CreateAzureActiveDirectoryTokenProvider(async (audience, authority, state) => token);
+            var tokenProvider = TokenProvider.CreateManagedIdentityTokenProvider(token);
 
             // Create a ServiceBusClient instance using the token provider
             var serviceBusClient = new ServiceBusClient(serviceBusNamespaceConnectionString, tokenProvider);
