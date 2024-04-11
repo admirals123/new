@@ -1,54 +1,79 @@
-using Microsoft.Azure.ServiceBus;
-using Microsoft.Azure.Services.AppAuthentication;
-using System;
-using System.Threading.Tasks;
+import com.azure.messaging.servicebus.*;
 
-class Program
+import java.util.concurrent.TimeUnit;
+import java.util.Arrays;
+import java.util.List;
+
+static String connectionString = "<NAMESPACE CONNECTION STRING>";
+static String queueName = "<QUEUE NAME>";
+
+static void sendMessage()
 {
-    static async Task Main(string[] args)
-    {
-        // Placeholder connection string
-        string serviceBusNamespaceConnectionString = "Endpoint=sb://your-servicebus-namespace.servicebus.windows.net/;SharedAccessKeyName=RootManageSharedAccessKey;SharedAccessKey=your-access-key";
+    // create a Service Bus Sender client for the queue
+    ServiceBusSenderClient senderClient = new ServiceBusClientBuilder()
+            .connectionString(connectionString)
+            .sender()
+            .queueName(queueName)
+            .buildClient();
 
-        try
-        {
-            // Get an access token using AzureServiceTokenProvider
-            var azureServiceTokenProvider = new AzureServiceTokenProvider();
-            var token = await azureServiceTokenProvider.GetAccessTokenAsync("https://servicebus.azure.net");
+    // send one message to the queue
+    senderClient.sendMessage(new ServiceBusMessage("Hello, World!"));
+    System.out.println("Sent a single message to the queue: " + queueName);
+}
 
-            // Extract the Azure AD tenant ID from the access token
-            var jwtToken = new System.IdentityModel.Tokens.Jwt.JwtSecurityToken(token);
-            string tenantId = jwtToken.Claims.FirstOrDefault(c => c.Type == "tid")?.Value;
+static List<ServiceBusMessage> createMessages()
+{
+    // create a list of messages and return it to the caller
+    ServiceBusMessage[] messages = {
+            new ServiceBusMessage("First message"),
+            new ServiceBusMessage("Second message"),
+            new ServiceBusMessage("Third message")
+    };
+    return Arrays.asList(messages);
+}
 
-            // Construct the authority using the tenant ID
-            string authority = tenantId != null ?
-                $"https://login.microsoftonline.com/{tenantId}" :
-                null;
 
-            // Create a token provider based on the acquired token
-            var tokenProvider = TokenProvider.CreateAzureActiveDirectoryTokenProvider(async (audience, auth, state) =>
-            {
-                return token;
-            }, authority);
+static void sendMessageBatch()
+{
+    // create a Service Bus Sender client for the queue
+    ServiceBusSenderClient senderClient = new ServiceBusClientBuilder()
+            .connectionString(connectionString)
+            .sender()
+            .queueName(queueName)
+            .buildClient();
 
-            // Create a ServiceBusClient instance using the token provider
-            var serviceBusClient = new ServiceBusClient(serviceBusNamespaceConnectionString, tokenProvider);
+    // Creates an ServiceBusMessageBatch where the ServiceBus.
+    ServiceBusMessageBatch messageBatch = senderClient.createMessageBatch();
 
-            // Create a ServiceBusSender instance
-            var sender = serviceBusClient.CreateSender("your-queue-name");
+    // create a list of messages
+    List<ServiceBusMessage> listOfMessages = createMessages();
 
-            // Create a message and send it to the queue
-            var message = new Message(System.Text.Encoding.UTF8.GetBytes("Hello, Azure Service Bus!"));
-            await sender.SendAsync(message);
-
-            Console.WriteLine("Message sent successfully.");
-
-            // Close the ServiceBusClient
-            await serviceBusClient.DisposeAsync();
+    // We try to add as many messages as a batch can fit based on the maximum size and send to Service Bus when
+    // the batch can hold no more messages. Create a new batch for next set of messages and repeat until all
+    // messages are sent.
+    for (ServiceBusMessage message : listOfMessages) {
+        if (messageBatch.tryAddMessage(message)) {
+            continue;
         }
-        catch (Exception ex)
-        {
-            Console.WriteLine($"An error occurred: {ex.Message}");
+
+        // The batch is full, so we create a new batch and send the batch.
+        senderClient.sendMessages(messageBatch);
+        System.out.println("Sent a batch of messages to the queue: " + queueName);
+
+        // create a new batch
+        messageBatch = senderClient.createMessageBatch();
+
+        // Add that message that we couldn't before.
+        if (!messageBatch.tryAddMessage(message)) {
+            System.err.printf("Message is too large for an empty batch. Skipping. Max size: %s.", messageBatch.getMaxSizeInBytes());
         }
     }
+
+    if (messageBatch.getCount() > 0) {
+        senderClient.sendMessages(messageBatch);
+        System.out.println("Sent a batch of messages to the queue: " + queueName);
+    }
+
+    //close the client
+    senderClient.close();
 }
