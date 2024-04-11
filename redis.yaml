@@ -7,17 +7,28 @@ class Program
 {
     static async Task Main(string[] args)
     {
+        // Placeholder connection string
+        string serviceBusNamespaceConnectionString = "Endpoint=sb://your-servicebus-namespace.servicebus.windows.net/;SharedAccessKeyName=RootManageSharedAccessKey;SharedAccessKey=your-access-key";
+
         try
         {
-            // Create a token provider using AzureServiceTokenProvider for Managed Identity authentication
+            // Get an access token using AzureServiceTokenProvider
             var azureServiceTokenProvider = new AzureServiceTokenProvider();
-            var tokenProvider = TokenProvider.CreateAzureActiveDirectoryTokenProvider(async (audience, authority, state) =>
+            var token = await azureServiceTokenProvider.GetAccessTokenAsync("https://servicebus.azure.net");
+
+            // Get the Azure AD tenant ID
+            string authority = azureServiceTokenProvider.TenantId != null ?
+                $"https://login.microsoftonline.com/{azureServiceTokenProvider.TenantId}" :
+                null;
+
+            // Create a token provider based on the acquired token
+            var tokenProvider = TokenProvider.CreateAzureActiveDirectoryTokenProvider(async (audience, auth, state) =>
             {
-                return await azureServiceTokenProvider.GetAccessTokenAsync("https://servicebus.azure.net");
-            });
+                return token;
+            }, authority);
 
             // Create a ServiceBusClient instance using the token provider
-            var serviceBusClient = new ServiceBusClient("your-service-bus-namespace.servicebus.windows.net", tokenProvider);
+            var serviceBusClient = new ServiceBusClient(serviceBusNamespaceConnectionString, tokenProvider);
 
             // Create a ServiceBusSender instance
             var sender = serviceBusClient.CreateSender("your-queue-name");
