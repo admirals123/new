@@ -1,7 +1,7 @@
-using System;
-using System.Threading.Tasks;
 using Microsoft.Azure.ServiceBus;
 using Microsoft.Azure.Services.AppAuthentication;
+using System;
+using System.Threading.Tasks;
 
 class Program
 {
@@ -17,7 +17,10 @@ class Program
             var token = await azureServiceTokenProvider.GetAccessTokenAsync("https://servicebus.azure.net");
 
             // Create a token provider based on the acquired token
-            var tokenProvider = TokenProvider.CreateManagedIdentityTokenProvider();
+            var tokenProvider = TokenProvider.CreateAzureActiveDirectoryTokenProvider(async (audience, authority, state) =>
+            {
+                return token;
+            });
 
             // Create a ServiceBusClient instance using the token provider
             var serviceBusClient = new ServiceBusClient(serviceBusNamespaceConnectionString, tokenProvider);
