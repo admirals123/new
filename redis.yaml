@@ -1,48 +1,42 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0"
-         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-    <modelVersion>4.0.0</modelVersion>
+using System;
+using System.Threading.Tasks;
+using Microsoft.Azure.ServiceBus;
+using Microsoft.Azure.Services.AppAuthentication;
 
-    <groupId>com.example</groupId>
-    <artifactId>azure-redis-example</artifactId>
-    <version>1.0-SNAPSHOT</version>
+class Program
+{
+    static async Task Main(string[] args)
+    {
+        // Replace with your Azure Service Bus namespace connection string
+        string serviceBusNamespaceConnectionString = "<your-service-bus-namespace-connection-string>";
 
-    <dependencies>
-        <!-- Jedis: Java Redis client -->
-        <dependency>
-            <groupId>redis.clients</groupId>
-            <artifactId>jedis</artifactId>
-            <version>3.6.1</version>
-        </dependency>
-    </dependencies>
+        try
+        {
+            // Get an access token using AzureServiceTokenProvider
+            var azureServiceTokenProvider = new AzureServiceTokenProvider();
+            var token = await azureServiceTokenProvider.GetAccessTokenAsync("https://servicebus.azure.net");
 
-    <build>
-        <plugins>
-            <!-- Compiler Plugin -->
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-compiler-plugin</artifactId>
-                <version>3.8.1</version>
-                <configuration>
-                    <source>1.8</source>
-                    <target>1.8</target>
-                </configuration>
-            </plugin>
-            <!-- Jar Plugin -->
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-jar-plugin</artifactId>
-                <version>3.2.0</version>
-                <configuration>
-                    <archive>
-                        <manifest>
-                            <addClasspath>true</addClasspath>
-                            <mainClass>com.example.RedisExample</mainClass>
-                        </manifest>
-                    </archive>
-                </configuration>
-            </plugin>
-        </plugins>
-    </build>
-</project>
+            // Create a token provider based on the acquired token
+            var tokenProvider = TokenProvider.CreateManagedIdentityTokenProvider();
+
+            // Create a ServiceBusClient instance using the token provider
+            var serviceBusClient = new ServiceBusClient(serviceBusNamespaceConnectionString, tokenProvider);
+
+            // Create a ServiceBusSender instance
+            var sender = serviceBusClient.CreateSender("your-queue-name");
+
+            // Create a message and send it to the queue
+            var message = new Message(System.Text.Encoding.UTF8.GetBytes("Hello, Azure Service Bus!"));
+            await sender.SendAsync(message);
+
+            Console.WriteLine("Message sent successfully.");
+
+            // Close the ServiceBusClient
+            await serviceBusClient.DisposeAsync();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"An error occurred: {ex.Message}");
+        }
+    }
+}
