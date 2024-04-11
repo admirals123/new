@@ -7,23 +7,17 @@ class Program
 {
     static async Task Main(string[] args)
     {
-        // Replace with your Azure Service Bus namespace connection string
-        string serviceBusNamespaceConnectionString = "<your-service-bus-namespace-connection-string>";
-
         try
         {
-            // Get an access token using AzureServiceTokenProvider
+            // Create a token provider using AzureServiceTokenProvider for Managed Identity authentication
             var azureServiceTokenProvider = new AzureServiceTokenProvider();
-            var token = await azureServiceTokenProvider.GetAccessTokenAsync("https://servicebus.azure.net");
-
-            // Create a token provider based on the acquired token
             var tokenProvider = TokenProvider.CreateAzureActiveDirectoryTokenProvider(async (audience, authority, state) =>
             {
-                return token;
+                return await azureServiceTokenProvider.GetAccessTokenAsync("https://servicebus.azure.net");
             });
 
             // Create a ServiceBusClient instance using the token provider
-            var serviceBusClient = new ServiceBusClient(serviceBusNamespaceConnectionString, tokenProvider);
+            var serviceBusClient = new ServiceBusClient("your-service-bus-namespace.servicebus.windows.net", tokenProvider);
 
             // Create a ServiceBusSender instance
             var sender = serviceBusClient.CreateSender("your-queue-name");
