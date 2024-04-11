@@ -1,44 +1,42 @@
 using System;
 using System.Threading.Tasks;
-using Azure.Identity;
-using Azure.Messaging.ServiceBus;
+using Microsoft.Azure.ServiceBus;
+using Microsoft.Azure.Services.AppAuthentication;
 
-namespace ServiceBusManagedIdentityDemo
+class Program
 {
-    class Program
+    static async Task Main(string[] args)
     {
-        // The Service Bus namespace connection string
-        private static readonly string ServiceBusNamespace = "<your-service-bus-namespace>.servicebus.windows.net";
-        // The Service Bus queue name
-        private static readonly string QueueName = "<your-queue-name>";
+        // Replace with your Azure Service Bus namespace connection string
+        string serviceBusNamespaceConnectionString = "<your-service-bus-namespace-connection-string>";
 
-        static async Task Main(string[] args)
+        try
         {
-            // Create a ServiceBusClient that will authenticate through Managed Identity
-            var client = new ServiceBusClient(ServiceBusNamespace, new DefaultAzureCredential());
+            // Get an access token using AzureServiceTokenProvider
+            var azureServiceTokenProvider = new AzureServiceTokenProvider();
+            var token = await azureServiceTokenProvider.GetAccessTokenAsync("https://servicebus.azure.net");
 
-            // Create a sender for the queue
-            ServiceBusSender sender = client.CreateSender(QueueName);
+            // Create a token provider based on the acquired token
+            var tokenProvider = TokenProvider.CreateAzureActiveDirectoryTokenProvider(async (audience, authority, state) => token);
 
-            // Create a message that we can send
-            ServiceBusMessage message = new ServiceBusMessage("Hello, Service Bus!");
+            // Create a ServiceBusClient instance using the token provider
+            var serviceBusClient = new ServiceBusClient(serviceBusNamespaceConnectionString, tokenProvider);
 
-            // Send the message
-            await sender.SendMessageAsync(message);
-            Console.WriteLine($"Sent a single message to the queue: {QueueName}");
+            // Create a ServiceBusSender instance
+            var sender = serviceBusClient.CreateSender("your-queue-name");
 
-            // Create a receiver that we can use to receive the message
-            ServiceBusReceiver receiver = client.CreateReceiver(QueueName);
+            // Create a message and send it to the queue
+            var message = new Message(System.Text.Encoding.UTF8.GetBytes("Hello, Azure Service Bus!"));
+            await sender.SendAsync(message);
 
-            // Receive the message
-            ServiceBusReceivedMessage receivedMessage = await receiver.ReceiveMessageAsync();
-            string body = receivedMessage.Body.ToString();
-            Console.WriteLine($"Received: {body}");
+            Console.WriteLine("Message sent successfully.");
 
-            // Close the sender, receiver, and client
-            await sender.DisposeAsync();
-            await receiver.DisposeAsync();
-            await client.DisposeAsync();
+            // Close the ServiceBusClient
+            await serviceBusClient.DisposeAsync();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"An error occurred: {ex.Message}");
         }
     }
 }
