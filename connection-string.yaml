@@ -1,10 +1,11 @@
 using System;
 using Azure.Messaging.ServiceBus;
 
-public class ConnectToASBWithManagedIdentity
+public class SendMessageToQueueWithManagedIdentity
 {
-    // Replace with your Service Bus namespace endpoint
+    // Replace with your Service Bus namespace endpoint and queue name
     private static readonly string fullyQualifiedNamespace = "<your-service-bus-namespace>.servicebus.windows.net";
+    private static readonly string queueName = "<your-queue-name>";
 
     public static async Task Main(string[] args)
     {
@@ -14,11 +15,28 @@ public class ConnectToASBWithManagedIdentity
         // Create a Service Bus client using the credential and namespace endpoint
         var serviceBusClient = new ServiceBusClient(fullyQualifiedNamespace, credential);
 
-        // You can now use the serviceBusClient to send or receive messages
+        // Create a sender for the specific queue
+        var sender = serviceBusClient.CreateSender(queueName);
 
-        Console.WriteLine("Connected to Azure Service Bus using managed identity!");
+        // Create a message with some content
+        var messageBody = "This is a message from a .NET application using managed identity.";
+        var serviceBusMessage = new ServiceBusMessage(messageBody);
 
-        // Close the connection
-        await serviceBusClient.DisposeAsync();
+        try
+        {
+            // Send the message
+            await sender.SendMessageAsync(serviceBusMessage);
+            Console.WriteLine($"Message sent to queue: {queueName}");
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error sending message: {ex.Message}");
+        }
+        finally
+        {
+            // Close the sender and client connection
+            await sender.DisposeAsync();
+            await serviceBusClient.DisposeAsync();
+        }
     }
 }
