@@ -1,60 +1,32 @@
-const express = require('express');
-const { SecretClient } = require("@azure/keyvault-secrets");
-const { ManagedIdentityCredential } = require("@azure/identity");
-const redis = require("redis");
+using Azure.Identity;
+using Azure.Messaging.ServiceBus;
 
-const app = express();
-app.use(express.json());
+namespace AsbManagedIdentityDemo
+{
+    class Program
+    {
+        static async Task Main(string[] args)
+        {
+            // Replace with your actual Service Bus namespace
+            string serviceBusNamespace = "your-service-bus-namespace.servicebus.windows.net";
+            string queueName = "your-queue-name";
 
-// Azure Key Vault details
-const keyVaultName = "your-key-vault-name";
-const secretName = "your-redis-secret-name";
-const secretVersion = "your-secret-version"; // Optional, if not specified, latest version will be used
+            // Create a ServiceBusClient using DefaultAzureCredential for managed identity
+            var credential = new DefaultAzureCredential();
+            var client = new ServiceBusClient(serviceBusNamespace, credential);
 
-// Create a Managed Identity Credential
-const credential = new ManagedIdentityCredential();
+            // Create a sender
+            var sender = client.CreateSender(queueName);
 
-// Create a SecretClient to get Redis access keys from Azure Key Vault
-const keyVaultUrl = `https://${keyVaultName}.vault.azure.net`;
-const secretClient = new SecretClient(keyVaultUrl, credential);
+            // Send a message
+            string messageBody = "Hello, Azure Service Bus!";
+            var message = new ServiceBusMessage(messageBody);
+            await sender.SendMessageAsync(message);
 
-// Retrieve Redis access key from Azure Key Vault
-async function getRedisAccessKey() {
-    const secret = await secretClient.getSecret(secretName, { version: secretVersion });
-    return secret.value;
-}
+            Console.WriteLine("Message sent!");
 
-// Connect to Redis using Managed Identity and retrieve data
-async function retrieveDataFromRedis() {
-    const redisAccessKey = await getRedisAccessKey();
-    const client = redis.createClient({
-        // Connect to Redis using the access key obtained from Key Vault
-        password: redisAccessKey
-    });
-
-    const data = {};
-    await client.connect();
-    const keys = await client.sendCommand(["keys", "*"]);
-    for (let key of keys) {
-        let value = await client.get(key);
-        data[key] = value;
+            // Close the client
+            await client.DisposeAsync();
+        }
     }
-    console.log("Data from Redis:", data);
-    client.quit();
-    return data;
 }
-
-// Route to retrieve data from Redis
-app.get('/retrieve', async (req, res) => {
-    try {
-        const data = await retrieveDataFromRedis();
-        res.json(data);
-    } catch (error) {
-        console.error("Error retrieving data from Redis:", error);
-        res.status(500).send("Error retrieving data from Redis");
-    }
-});
-
-app.listen(4000, () => {
-    console.log("Server Listening on PORT:", 4000);
-});
