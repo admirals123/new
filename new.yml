@@ -1,153 +1,24 @@
-FROM ubuntu:20.04
-RUN apt-get update && apt-get install -y curl gnupg
-RUN curl [6](https://www.docker.com/blog/how-to-use-the-redis-docker-official-image/) | apt-key add -
-RUN echo "deb [7](https://www.docker.com/blog/how-to-use-the-redis-docker-official-image/) $(lsb_release -cs) main" | tee /etc/apt/sources.list.d/redis.list
-RUN apt-get update && apt-get install -y redis=7.0.5-1~focal1
-EXPOSE 6379
-CMD ["redis-server"]
+using System;
+using Azure.Messaging.ServiceBus;
 
+public class ConnectToASBWithManagedIdentity
+{
+    // Replace with your Service Bus namespace endpoint
+    private static readonly string fullyQualifiedNamespace = "<your-service-bus-namespace>.servicebus.windows.net";
 
-https://us04web.zoom.us/j/75953051069?pwd=gNQzplEeqazQAeL01qhwatbTy9W2HR.1
+    public static async Task Main(string[] args)
+    {
+        // Use DefaultAzureCredential to acquire token from managed identity
+        var credential = new DefaultAzureCredential();
 
-import redis
+        // Create a Service Bus client using the credential and namespace endpoint
+        var serviceBusClient = new ServiceBusClient(fullyQualifiedNamespace, credential);
 
-# Azure Redis Cache details
-hostname = 'your-azure-redis-cache-name.redis.cache.windows.net'  # Replace with your hostname
-port = 6380  # Default SSL port for Azure Redis Cache
-password = 'your-access-key'  # Replace with your primary or secondary access key
+        // You can now use the serviceBusClient to send or receive messages
 
-# Connect to Azure Redis Cache
-# Note: SSL connection is required for Azure Redis Cache
-r = redis.Redis(host=hostname, port=port, password=password, ssl=True, ssl_cert_reqs=None)
+        Console.WriteLine("Connected to Azure Service Bus using managed identity!");
 
-# Example operations
-# Set a key
-r.set('mykey', 'Hello from Azure Redis Cache!')
-
-# Retrieve the value of a key
-value = r.get('mykey')
-print(f"The value of 'mykey' is: {value.decode('utf-8')}")
-
-
-
-# Use an official Python runtime as a parent image
-FROM python:3.8-slim
-
-# Set the working directory in the container
-WORKDIR /usr/src/app
-
-# Copy the current directory contents into the container at /usr/src/app
-COPY . .
-
-# Install any needed packages specified in requirements.txt
-RUN pip install --no-cache-dir -r requirements.txt
-
-# Run app.py when the container launches
-CMD ["python", "./app.py"]
-
-
-
-
-import redis
-
-# Connect to the Redis cache
-redis_host = "<your_cache_name>.redis.cache.windows.net"
-redis_password = "<your_primary_key>"
-redis_port = "<your_ssl_port>"
-
-r = redis.StrictRedis(host=redis_host, port=redis_port, password=redis_password, ssl=True)
-
-# Set a test value in Redis
-r.set('test', 'Hello, Redis!')
-
-# Retrieve and print the value
-print(r.get('test').decode("utf-8"))
-
-
-
-
-
-
-
-dism.exe /online /enable-feature /featurename:Microsoft-Windows-Subsystem-Linux /all /norestart
-
-dism.exe /online /enable-feature /featurename:VirtualMachinePlatform /all /norestart
-
-
-
-Setting up Windows Subsystem for Linux (WSL) allows you to run a Linux environment directly on Windows, without the overhead of a traditional virtual machine or dual-boot setup. Here's how to set it up:
-
-### Step 1: Enable the Windows Subsystem for Linux
-
-1. **Open PowerShell as Administrator**: Press `Windows + X` and select "Windows PowerShell (Admin)" or "Command Prompt (Admin)".
-2. **Enable WSL**: Type the following command and press Enter:
-   ```powershell
-   dism.exe /online /enable-feature /featurename:Microsoft-Windows-Subsystem-Linux /all /norestart
-   ```
-
-### Step 2: Enable Virtual Machine Platform (Optional for WSL 2)
-
-1. **Enable Virtual Machine Platform**: Still in PowerShell, run the following command:
-   ```powershell
-   dism.exe /online /enable-feature /featurename:VirtualMachinePlatform /all /norestart
-   ```
-2. **Restart your computer** to complete the WSL install and update to WSL 2.
-
-### Step 3: Set WSL 2 as Your Default Version (Optional)
-
-After restarting, set WSL 2 as the default version when installing new Linux distributions:
-
-```powershell
-wsl --set-default-version 2
-```
-
-### Step 4: Install a Linux Distribution
-
-1. **Open the Microsoft Store**: Search for your favorite Linux distribution (e.g., Ubuntu, Debian, Fedora).
-2. **Select and Install**: Click on the Linux distribution of your choice and click "Install".
-
-### Step 5: Set up Your Linux Distribution
-
-1. **Launch the Linux Distribution**: After installation, launch it from the Start menu.
-2. **Create a User Account and Password**: The first time you launch a newly installed Linux distribution, a console window will open, and you'll need to wait for files to decompress and be stored on your PC. Afterward, you'll be prompted to create a user account and password for your new Linux distribution.
-
-### Step 6: Update and Upgrade Your Linux Distribution
-
-To ensure all packages are up to date, run the following commands in your Linux console:
-
-```bash
-sudo apt update && sudo apt upgrade
-```
-
-### Additional Steps for WSL 2
-
-If you specifically need WSL 2 for its performance and full system call compatibility, make sure your Windows version supports it and you've completed the Virtual Machine Platform step. You might also need to download and install the Linux kernel update package from the Microsoft website if your setup requires it.
-
-That's the basic process! After setup, you can use your Linux distribution through the Windows terminal, PowerShell, or any terminal emulator you prefer.
-
-
-
-
-
-# Use an official Python runtime as a parent image
-FROM python:3.8-slim
-
-# Set the working directory in the container
-WORKDIR /usr/src/app
-
-# Install redis-tools for redis-cli
-RUN apt-get update && apt-get install -y redis-tools
-
-# Copy the current directory contents into the container at /usr/src/app
-COPY . .
-
-# Make port 80 available to the world outside this container
-EXPOSE 80
-
-# Define environment variable (use these in your application)
-ENV REDIS_HOST=your_redis_cache_hostname.redis.cache.windows.net
-ENV REDIS_PORT=6380
-ENV REDIS_PASSWORD=your_access_key
-
-# Run your application using CMD command
-CMD ["python", "./your-app.py"]
+        // Close the connection
+        await serviceBusClient.DisposeAsync();
+    }
+}
