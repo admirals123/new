@@ -1,0 +1,44 @@
+using Azure.Identity;
+using Azure.Messaging.ServiceBus;
+using Azure.Messaging.ServiceBus.Administration;
+
+namespace AsbManagedIdentityDemo
+{
+    class Program
+    {
+        static async Task Main(string[] args)
+        {
+            // Your Service Bus Namespace and Queue Name
+            string serviceBusNamespace = "your-service-bus-namespace.servicebus.windows.net";
+            string queueName = "your-queue-name";
+
+            // Connection string with administrative privileges
+            string adminConnectionString = "your-admin-connection-string";
+
+            // ... (rest of the code)
+
+            var adminClient = new ServiceBusAdministrationClient(adminConnectionString);
+            var queueExists = await adminClient.QueueExistsAsync(queueName);
+
+            if (queueExists) {
+                Console.WriteLine("Queue exists.");
+
+                // Message sending logic
+                var credential = new DefaultAzureCredential();
+                var client = new ServiceBusClient(serviceBusNamespace, credential);
+                var sender = client.CreateSender(queueName);
+
+                // Data to send (Replace with your actual data)
+                string messageBody = "Your data to send"; 
+                var message = new ServiceBusMessage(messageBody);
+                await sender.SendMessageAsync(message); 
+
+                Console.WriteLine("Message sent!");
+                await client.DisposeAsync();
+
+            } else {
+                Console.WriteLine("Queue does not exist. Please create it.");
+            }
+        }
+    }
+}
