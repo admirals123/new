@@ -1,0 +1,18 @@
+// ... other usings ...
+using Azure.Messaging.ServiceBus.Administration;
+
+// ... inside your Main method ...
+
+// Connection string with administrative privileges
+string adminConnectionString = "your-admin-connection-string";
+
+var adminClient = new ServiceBusAdministrationClient(adminConnectionString);
+var queueExists = await adminClient.QueueExistsAsync(queueName);
+
+if (queueExists) {
+    Console.WriteLine("Queue exists.");
+    // ... your existing sending logic ...
+} else {
+    Console.WriteLine("Queue does not exist. Please create it.");
+}
+
