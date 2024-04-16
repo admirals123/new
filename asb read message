@@ -1,0 +1,54 @@
+using System;
+using System.Text;
+using System.Threading.Tasks;
+using Azure.Messaging.ServiceBus;
+
+namespace ASBMessageReader
+{
+    class Program
+    {
+        // Replace with your Azure Service Bus connection string
+        private static readonly string connectionString = "<YOUR_SERVICE_BUS_CONNECTION_STRING>";
+
+        // Replace with your Azure Service Bus queue name
+        private static readonly string queueName = "<YOUR_QUEUE_NAME>";
+
+        static async Task Main(string[] args)
+        {
+            await ReceiveMessagesAsync();
+        }
+
+        static async Task ReceiveMessagesAsync()
+        {
+            // Create a Service Bus client 
+            ServiceBusClient client = new ServiceBusClient(connectionString);
+
+            // Create a receiver for the queue
+            ServiceBusReceiver receiver = client.CreateReceiver(queueName);
+
+            Console.WriteLine("Receiving messages from the queue...");
+
+            while (true)
+            {
+                // Receive a message from the queue (PeekLock mode is the default)
+                ServiceBusReceivedMessage receivedMessage = await receiver.ReceiveMessageAsync();
+
+                if (receivedMessage != null)
+                {
+                    // Process the message
+                    string body = Encoding.UTF8.GetString(receivedMessage.Body);
+                    Console.WriteLine($"Received message: {body}");
+
+                    // Complete the message to remove it from the queue
+                    await receiver.CompleteMessageAsync(receivedMessage);
+                }
+                else 
+                {
+                    Console.WriteLine("No messages available. Waiting...");
+                    await Task.Delay(1000); // Check less frequently if no messages are found
+                }
+            }
+        }
+    }
+}
+
