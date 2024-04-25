@@ -1,47 +1,53 @@
 using StackExchange.Redis;
-using Azure.Identity;
 
-namespace RedisCacheDemo
+namespace RedisTest
 {
     class Program
     {
         static async Task Main(string[] args)
         {
-            // ***** Important: Replace Placeholders *****
-            var redisCacheName = "<YOUR_REDIS_CACHE_NAME>";
+            // Get sensitive values from Azure Key Vault (recommended) or environment variables
+            var cacheHostName = Environment.GetEnvironmentVariable("AZURE_CACHE_FOR_REDIS_HOST_NAME");
+            if (string.IsNullOrEmpty(cacheHostName)) throw new Exception("AZURE_CACHE_FOR_REDIS_HOST_NAME is empty");
 
-            // Get hostname and port from connection string template 
-            var template = $"{redisCacheName}.redis.cache.windows.net:6380,password=,ssl=True,abortConnect=False";
-            string[] parts = template.Split(',');
-            string hostname = parts[0].Split(':')[0];
-            int port = Convert.ToInt32(parts[0].Split(':')[1]);
+            // Use TokenCredential from Azure.Identity for Managed Identity authentication
+            var tokenCredential = new DefaultAzureCredential();
 
-            // Configure client options
-            ConfigurationOptions options = new ConfigurationOptions
+            // Configure connection options
+            var config = new ConfigurationOptions
             {
-                EndPoints = { { hostname, port } },
-                Ssl = true,   
-                AbortOnConnectFail = false 
+                EndPoints = { cacheHostName + ":6380" },
+                Ssl = true,
+                Password = tokenCredential, // Fetch access key via managed identity
+                AllowAdmin = true // Might be needed for certain commands
             };
 
-            // Connect (without immediate customization)
-            ConnectionMultiplexer redis = ConnectionMultiplexer.Connect(options); 
+            using (var redis = ConnectionMultiplexer.Connect(config))
+            {
+                IDatabase db = redis.GetDatabase();
 
-            // Customize the AUTH command
-            redis.CommandMap.Set("AUTH", (string password)  => redis.GetDatabase().Execute("AUTH", password)); 
+                // PING command
+                Console.WriteLine("\nCache command: PING");
+                Console.WriteLine("Cache response : " + await db.ExecuteAsync("PING"));
 
-            // Obtain token and authenticate
-            var credential = new DefaultAzureCredential();
-            string token = credential.GetToken(new Azure.Core.TokenRequestContext(new[] { "https://management.azure.com/" })).Token;
-            redis.GetDatabase().Execute("AUTH", token); // Perform the actual authentication
+                // GET
+                Console.WriteLine("\nCache command: GET Message");
+                Console.WriteLine("Cache response : " + await db.StringGetAsync("Message"));
 
-            // ***** Redis Operations *****
-            // Example: Set a key-value pair
-            await redis.GetDatabase().StringSetAsync("message:hello", "world");
+                // SET
+                Console.WriteLine("\nCache command: SET Message");
+                Console.WriteLine("Cache response : " + await db.StringSetAsync("Message", "Hello! The cache is working from C#!"));
 
-            // Example: Get the value
-            string value = await redis.GetDatabase().StringGetAsync("message:hello");
-            Console.WriteLine(value); 
+                // GET again
+                Console.WriteLine("\nCache command: GET Message");
+                Console.WriteLine("Cache response : " + await db.StringGetAsync("Message"));
+
+                // Client list
+                Console.WriteLine("\nCache command: CLIENT LIST");
+                Console.WriteLine("Cache response : " + await db.ExecuteAsync("CLIENT", "LIST"));
+            }
+
+            Console.WriteLine("Done");
         }
     }
 }
