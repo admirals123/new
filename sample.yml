@@ -1,23 +1,42 @@
 using StackExchange.Redis; 
-// ... other code ...
 
-// Obtain a connection string template - only for getting hostname and port
-var template = "<YOUR_REDIS_CACHE_NAME>.redis.cache.windows.net:6380,password=,ssl=True,abortConnect=False";
-
-// Split the template to extract hostname and port
-string[] parts = template.Split(',');
-string hostname = parts[0].Split(':')[0]; 
-int port = Convert.ToInt32(parts[0].Split(':')[1]); 
-
-// Configure client options with the token credential
-ConfigurationOptions options = new ConfigurationOptions
+namespace RedisCacheDemo
 {
-    EndPoints = { { hostname, port } },
-    Ssl = true,   
-    AbortOnConnectFail = false,
-    TokenCredential = new DefaultAzureCredential() 
-};
+    class Program
+    {
+        static async Task Main(string[] args)
+        {
+            // Placeholder for getting hostname and port
+            var template = "<YOUR_REDIS_CACHE_NAME>.redis.cache.windows.net:6380,password=,ssl=True,abortConnect=False";
 
-// Connect and continue as before ...
-ConnectionMultiplexer redis = ConnectionMultiplexer.Connect(options);
-// ... rest of your code ...
+            // Split the template to extract hostname and port
+            string[] parts = template.Split(',');
+            string hostname = parts[0].Split(':')[0]; 
+            int port = Convert.ToInt32(parts[0].Split(':')[1]); 
+
+            // Configure client options with the token credential
+            ConfigurationOptions options = new ConfigurationOptions
+            {
+                EndPoints = { { hostname, port } },
+                Ssl = true,   
+                AbortOnConnectFail = false,
+                TokenCredential = new DefaultAzureCredential() 
+            };
+
+            // Connect to Azure Redis Cache
+            ConnectionMultiplexer redis = ConnectionMultiplexer.Connect(options);
+            IDatabase db = redis.GetDatabase();
+
+            // Replace message sending logic with Redis operations
+            for (int i = 1; i <= 3; i++) // Example with 3 messages
+            {
+                string value = $"Message {i}"; 
+
+                // Example: Store in a simple key-value
+                await db.StringSetAsync($"message:{i}", value); 
+            }
+
+            Console.WriteLine("3 messages have been added to Redis Cache.");
+        }
+    }
+}
