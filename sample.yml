@@ -16,31 +16,31 @@ namespace RedisCacheDemo
             string hostname = parts[0].Split(':')[0];
             int port = Convert.ToInt32(parts[0].Split(':')[1]);
 
-            // Configure Redis connection
+            // Configure client options
             ConfigurationOptions options = new ConfigurationOptions
             {
                 EndPoints = { { hostname, port } },
-                Ssl = true,
+                Ssl = true,   
                 AbortOnConnectFail = false 
             };
 
-            // Modify the connection setup using OnConfiguring
-            options.EndPoints.OnConfiguring = (endpoint, configuration) => { 
-                var credential = new DefaultAzureCredential();
-                string token = credential.GetToken(new Azure.Core.TokenRequestContext(new[] { "https://management.azure.com/" })).Token; 
-                configuration.Password = token;
-            };
+            // Connect (without immediate customization)
+            ConnectionMultiplexer redis = ConnectionMultiplexer.Connect(options); 
 
-            // Connect to Azure Redis Cache
-            ConnectionMultiplexer redis = ConnectionMultiplexer.Connect(options);
-            IDatabase db = redis.GetDatabase();
+            // Customize the AUTH command
+            redis.CommandMap.Set("AUTH", (string password)  => redis.GetDatabase().Execute("AUTH", password)); 
+
+            // Obtain token and authenticate
+            var credential = new DefaultAzureCredential();
+            string token = credential.GetToken(new Azure.Core.TokenRequestContext(new[] { "https://management.azure.com/" })).Token;
+            redis.GetDatabase().Execute("AUTH", token); // Perform the actual authentication
 
             // ***** Redis Operations *****
             // Example: Set a key-value pair
-            await db.StringSetAsync("message:hello", "world");
+            await redis.GetDatabase().StringSetAsync("message:hello", "world");
 
             // Example: Get the value
-            string value = await db.StringGetAsync("message:hello");
+            string value = await redis.GetDatabase().StringGetAsync("message:hello");
             Console.WriteLine(value); 
         }
     }
