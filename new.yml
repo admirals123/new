@@ -20,3 +20,38 @@ roleRef:
   kind: Role
   name: kyverno-namespace-role
   apiGroup: rbac.authorization.k8s.io
+
+
+
+In Kyverno, you can modify the previous example to use a service account instead of a user in the RoleBinding:
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  namespace: my-namespace
+  name: kyverno-namespace-role
+rules:
+- apiGroups: ["*"]
+  resources: ["pods"]
+  verbs: ["get", "list", "watch"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  namespace: my-namespace
+  name: kyverno-namespace-rolebinding
+subjects:
+- kind: ServiceAccount
+  name: my-service-account # Replace with your service account name
+  namespace: my-namespace # Specify the namespace of the service account
+roleRef:
+  kind: Role
+  name: kyverno-namespace-role
+  apiGroup: rbac.authorization.k8s.io
+
+Key changes:
+ * subjects:
+   * kind is changed to ServiceAccount.
+   * name is replaced with the actual name of your service account.
+   * namespace is added to specify the namespace where the service account exists.
+Ensure that the service account "my-service-account" exists in the "my-namespace" namespace before applying this RoleBinding.
+ * https://blog.csdn.net/BushQiang/article/details/114295546
