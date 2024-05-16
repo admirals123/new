@@ -1,4 +1,22 @@
-kubectl auth can-i --as=system:serviceaccount:kyverno:kyverno-cleanup-controller delete deployment --all-namespaces
-
-
-https://us06web.zoom.us/j/7756101766?pwd=VG9KY3VDUUtjWmlkZ1Rlc2xDODBLQT09
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  namespace: my-namespace
+  name: kyverno-namespace-role
+rules:
+- apiGroups: ["*"]
+  resources: ["pods"]
+  verbs: ["get", "list", "watch"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  namespace: my-namespace
+  name: kyverno-namespace-rolebinding
+subjects:
+- kind: User
+  name: my-user
+roleRef:
+  kind: Role
+  name: kyverno-namespace-role
+  apiGroup: rbac.authorization.k8s.io
