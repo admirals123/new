@@ -1,26 +1,19 @@
-
-
-
-apiVersion: rbac.authorization.k8s.io/v1
-kind: ClusterRoleBinding
+apiVersion: batch/v1
+kind: CronJob
 metadata:
-  name: kyverno-cleanup-pods-binding
-subjects:
-- kind: ServiceAccount
-  name: kyverno-cleanup-controller # Replace with your actual service account name
-  namespace: kyverno
-roleRef:
-  kind: ClusterRole
-  name: kyverno-cleanup-pods
-  apiGroup: rbac.authorization.k8s.io
-
-
-
-
-
-DefaultAzureCredential simplifies Azure authentication by trying different methods in order:
- * Environment Variables: Checks for Azure credentials set as environment variables.
- * Managed Identity: Uses the identity assigned to an Azure resource (if running on one).
- * Shared Token Cache:  Looks for credentials in a shared cache (e.g., used by Visual Studio).
- * Interactive Login:  If none of the above work, prompts the user to log in interactively.
-This allows your code to work seamlessly in different environments without manual credential configuration.
+  name: pipelinerun-cleanup
+spec:
+  schedule: "0 */12 * * *" # Run every 12 hours
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          containers:
+          - name: cleanup
+            image: bitnami/kubectl # Use a suitable kubectl image
+            args:
+            - delete
+            - pipelinerun
+            - --all
+            - --field-selector=metadata.creationTimestamp<$(date -d '12 hours ago' +%Y-%m-%dT%H:%M:%SZ) 
+          restartPolicy: OnFailure
