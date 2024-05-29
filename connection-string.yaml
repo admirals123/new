@@ -1,42 +1,42 @@
-using System;
-using Azure.Messaging.ServiceBus;
+Absolutely! The warning indicates your CronJob's pod doesn't meet the Kubernetes "restricted" PodSecurity Standards. Here's the updated configuration to address that:
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: pipelinerun-cleanup
+spec:
+  schedule: "* * * * *" 
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          securityContext: # Add securityContext for the Pod
+            runAsNonRoot: true
+          containers:
+          - name: cleanup
+            image: bitnami/kubectl 
+            args: 
+              # ... (rest of the args are the same) ...
+            securityContext: # Add securityContext for the container
+              allowPrivilegeEscalation: false
+              capabilities:
+                drop:
+                - ALL
+              runAsNonRoot: true
+              seccompProfile:
+                type: RuntimeDefault 
+          restartPolicy: OnFailure
 
-public class SendMessageToQueueWithManagedIdentity
-{
-    // Replace with your Service Bus namespace endpoint and queue name
-    private static readonly string fullyQualifiedNamespace = "<your-service-bus-namespace>.servicebus.windows.net";
-    private static readonly string queueName = "<your-queue-name>";
-
-    public static async Task Main(string[] args)
-    {
-        // Use DefaultAzureCredential to acquire token from managed identity
-        var credential = new DefaultAzureCredential();
-
-        // Create a Service Bus client using the credential and namespace endpoint
-        var serviceBusClient = new ServiceBusClient(fullyQualifiedNamespace, credential);
-
-        // Create a sender for the specific queue
-        var sender = serviceBusClient.CreateSender(queueName);
-
-        // Create a message with some content
-        var messageBody = "This is a message from a .NET application using managed identity.";
-        var serviceBusMessage = new ServiceBusMessage(messageBody);
-
-        try
-        {
-            // Send the message
-            await sender.SendMessageAsync(serviceBusMessage);
-            Console.WriteLine($"Message sent to queue: {queueName}");
-        }
-        catch (Exception ex)
-        {
-            Console.WriteLine($"Error sending message: {ex.Message}");
-        }
-        finally
-        {
-            // Close the sender and client connection
-            await sender.DisposeAsync();
-            await serviceBusClient.DisposeAsync();
-        }
-    }
-}
+Key Changes:
+ * Pod SecurityContext: Added securityContext at the pod level with runAsNonRoot: true to ensure the pod runs as a non-root user.
+ * Container SecurityContext: Enhanced the container's securityContext:
+   * allowPrivilegeEscalation: false: Prevents privilege escalation within the container.
+   * capabilities.drop: ["ALL"]: Drops all Linux capabilities.
+   * runAsNonRoot: true:  Ensures the container runs as a non-root user.
+   * seccompProfile.type: RuntimeDefault: Uses the default seccomp profile for enhanced security.
+How to Apply:
+ * Save: Save the modified file.
+ * Replace/Update:
+   * If the CronJob already exists, use kubectl replace -f pipelinerun-cleanup.yaml to replace it.
+   * If you haven't created the CronJob before, use kubectl apply -f pipelinerun-cleanup.yaml to create it.
+Let me know if you have any other questions or need further assistance!
+ * https://github.com/alvdevcl/ids-terraform
