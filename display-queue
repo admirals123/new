@@ -10,3 +10,6 @@ else
 fi
 
 echo "Done!"
+
+
+kubectl delete pipelinerun $( kubectl get pipelinerun -n tekton-pipelines| grep -i 12H | cut -f1 -d " ") -n tekton-pipelines
