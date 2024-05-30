@@ -1,18 +1,12 @@
-// ... other usings ...
-using Azure.Messaging.ServiceBus.Administration;
+#!/bin/bash
 
-// ... inside your Main method ...
+# Check if there are any PipelineRuns
+if kubectl get pipelinerun &> /dev/null; then  # Suppress output and check the return code
+    echo "PipelineRuns found. Deleting specific PipelineRun..."
+    kubectl delete pipelinerun appbuild-run-d92a83ed-949f-488c-b6f0-a25e8a492ad7mz5vq
+else
+    echo "No PipelineRuns found. Deleting cleanup job..."
+    kubectl delete job pipelinerun-cleanup-28617917
+fi
 
-// Connection string with administrative privileges
-string adminConnectionString = "your-admin-connection-string";
-
-var adminClient = new ServiceBusAdministrationClient(adminConnectionString);
-var queueExists = await adminClient.QueueExistsAsync(queueName);
-
-if (queueExists) {
-    Console.WriteLine("Queue exists.");
-    // ... your existing sending logic ...
-} else {
-    Console.WriteLine("Queue does not exist. Please create it.");
-}
-
+echo "Done!"
