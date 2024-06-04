@@ -1,1 +1,2 @@
-kubectl get pods | awk '{ if ($5 ~ /^[0-9]+[dh]$/ && ($5+0 > 60 || $5 ~ /d/)) print $1 }'
+kubectl get pipelinerun -n tekton-pipelines | awk 'match($5,/^[1-9][0-9]*h$/) {print $0}'
+
