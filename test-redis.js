@@ -14,3 +14,8 @@ Sure, here is a way to paraphrase the text in the image completely differently:
 
 
 Collaborated with colleagues to gain knowledge of Azure concepts and Terraform.
+
+
+Absolutely! Here are some soft skill goals you can consider for your mid-year evaluation:
+ * Communication: Enhance your communication skills by actively listening to stakeholder needs, clearly documenting technical decisions, and effectively presenting k8s concepts to both technical and non-technical audiences.
+ * Collaboration: Foster stronger collaboration by mentoring junior engineers, actively participating in cross-functional teams, and effectively resolving conflicts that may arise during deployments or troubleshooting.
