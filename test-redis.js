@@ -11,3 +11,6 @@ By systematically checking these areas, you should be able to identify the root 
 
 Sure, here is a way to paraphrase the text in the image completely differently:
  * I sought out my team's help to better understand my weaknesses and continuously learn. I met with colleagues regularly to get their insights. I leveraged my cloud expertise to contribute to the GWAM project. I offered assistance to GWAM team members whenever possible and shared relevant knowledge.
+
+
+Collaborated with colleagues to gain knowledge of Azure concepts and Terraform.
