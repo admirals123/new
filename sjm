@@ -1,0 +1,1 @@
+SELECT percentage(count(*), WHERE result = 'SUCCESS') AS 'Success Rate', percentage(count(*), WHERE result != 'SUCCESS') AS 'Failure Rate' FROM SyntheticCheck FACET monitorName TIMESERIES 
