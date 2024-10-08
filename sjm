@@ -1,3 +1,7 @@
+SELECT count(*) FROM SyntheticCheck WHERE monitorName = 'your_monitor_name' AND result = 'SUCCESS' SINCE 1 day ago
+
+
+
 SELECT percentage(count(*), WHERE result = 'SUCCESS') AS 'Success Rate', 
        percentage(count(*), WHERE result != 'SUCCESS') AS 'Failure Rate' 
 FROM SyntheticCheck 
