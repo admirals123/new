@@ -7,3 +7,7 @@ Please let me know if you have any questions or require further information.
 Thank you for your time and consideration.
 Sincerely,
 [Your Name]
+
+
+
+docker run -it --rm -v /path/to/your/kubeconfig:/kubeconfig velero/velero backup list
