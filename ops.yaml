@@ -17,3 +17,32 @@ echo "Names:"
 for name in "${names_array[@]}"; do
   echo "- $name"
 done
+
+
+
+
+
+
+
+
+
+#!/bin/bash
+
+# Assuming name_value is an array now
+
+# Extract metadata:name: values from file1.yaml
+name_value=($(yq e '.metadata.name[]' file1.yaml))
+
+# Loop through each value in the array
+for value in "${name_value[@]}"; do
+    if [[ -z "$value" ]]; then
+        echo "Error: Empty value found in array"
+        continue
+    fi
+
+    echo "Replacing <secret-name> with: $value"
+
+    # Replace <secret-name> in file2.yaml with the current value
+    sed -i "s/<secret-name>/$value/g" file2.yaml
+done
+
