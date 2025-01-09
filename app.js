@@ -36,3 +36,46 @@ Note:
  * This script assumes that the name field in file1.yaml contains only word characters. You may need to adjust the regular expression if the value can contain other characters.
  * This script modifies file2 in-place. Make sure to have a backup of file2 before running the script.
  * This script provides a basic example. You can further customize it based on your specific requirements, such as handling multiple occurrences of <secret-name> differently or using more complex logic for extracting the value from file1.yaml.
+
+
+
+#!/bin/bash
+
+# Extract all 'name' values from multiple YAML documents
+name_values=$(yq -r '.[] | .metadata.name' file1.yaml)
+
+# Check if any name_values were extracted
+if [[ -z "$name_values" ]]; then
+  echo "Error: Could not extract any name values from file1.yaml"
+  exit 1
+fi
+
+# Iterate over each extracted name_value
+for name_value in $name_values; do
+  # Replace <secret-name> in file2 with the current name_value
+  sed -i "s/<secret-name>/$name_value/g" file2
+done
+
+# Display a success message
+echo "Successfully replaced <secret-name> with extracted values in file2"
+
+Explanation:
+ * Extract all 'name' values:
+   * yq -r '.[] | .metadata.name' file1.yaml:
+     * -r: Output the results in raw format (without quotes).
+     * '.[]': Selects all top-level documents in the file.
+     * '.metadata.name': Extracts the name value from the metadata section of each document.
+   * name_values=$(...): Stores the extracted values in the name_values variable.
+ * Check for empty values:
+   * The if statement checks if any name_values were extracted. If not, it displays an error message and exits.
+ * Iterate and replace:
+   * for name_value in $name_values; do ... done: This loop iterates over each name_value in the array.
+     * sed -i "s/<secret-name>/$name_value/g" file2: Replaces <secret-name> with the current name_value in file2.
+ * Success message:
+   * echo "Successfully replaced <secret-name> with extracted values in file2": Displays a success message after all replacements are completed.
+Key improvements:
+ * Handles multiple YAML documents within file1.yaml.
+ * Extracts name values from each document using yq.
+ * Iterates through the extracted values and performs the replacement for each value.
+ * Includes error handling and a success message.
+This script provides a more robust and flexible solution for handling multiple YAML documents and extracting the desired name values for the replacement.
