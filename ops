@@ -1,0 +1,83 @@
+def create_new_file(file1, file2, file3, value_to_grab):
+  """
+  Reads file1, extracts a specific value, and creates a new file2 
+  with the format defined in file3.
+
+  Args:
+    file1: Path to the input file.
+    file2: Path to the output file.
+    file3: Path to the file containing the desired output format.
+    value_to_grab: The specific value to extract from file1.
+
+  Raises:
+    ValueError: If the value_to_grab is not found in file1.
+  """
+
+  try:
+    with open(file1, 'r') as f1:
+      file1_content = f1.read()
+
+    # Extract the desired value 
+    if value_to_grab in file1_content:
+      # Assuming value_to_grab is a substring 
+      extracted_value = file1_content.split(value_to_grab)[1].split()[0] 
+    else:
+      raise ValueError(f"Value '{value_to_grab}' not found in {file1}")
+
+    with open(file3, 'r') as f3:
+      file3_content = f3.read()
+
+    # Replace placeholder in file3_content with extracted value
+    new_file2_content = file3_content.replace('{{value}}', extracted_value)
+
+    with open(file2, 'w') as f2:
+      f2.write(new_file2_content)
+
+    print(f"New file '{file2}' created successfully.")
+
+  except FileNotFoundError as e:
+    print(f"Error: {e}")
+  except ValueError as e:
+    print(f"Error: {e}")
+
+# Example usage
+file1_path = "input.txt"
+file2_path = "output.txt"
+file3_path = "format.txt"
+value_to_find = "target_value" 
+
+create_new_file(file1_path, file2_path, file3_path, value_to_find) 
+
+Explanation:
+ * Import necessary modules: (If not already imported)
+   * os: For file system operations (optional, depending on your use case)
+ * Define the function create_new_file():
+   * Takes four arguments:
+     * file1: Path to the input file.
+     * file2: Path to the output file.
+     * file3: Path to the file containing the desired output format.
+     * value_to_grab: The specific value to extract from file1.
+ * Read the input file (file1) using with open(...) as f1::
+   * Read the entire content of file1 into the file1_content variable.
+ * Extract the desired value:
+   * Check if value_to_grab exists in file1_content.
+   * If found, extract the value after value_to_grab (assuming a simple scenario).
+     * This assumes a specific format where the value follows value_to_grab and is the first word after it. You might need to adjust this based on the actual format of file1.
+   * If value_to_grab is not found, raise a ValueError.
+ * Read the format file (file3) using with open(...) as f3::
+   * Read the entire content of file3 into the file3_content variable.
+ * Create the content for the new file (file2) by replacing a placeholder (e.g., {{value}}) in file3_content with the extracted_value.
+ * Write the new content to the output file (file2) using with open(...) as f2::
+   * Write the new_file2_content to file2.
+ * Print a success message.
+ * Handle potential errors:
+   * FileNotFoundError: Raised if any of the input files (file1, file3) are not found.
+   * ValueError: Raised if the value_to_grab is not found in file1.
+ * Example usage:
+ * Provide sample values for file1_path, file2_path, file3_path, and value_to_find.
+ * Call the create_new_file() function with the provided arguments.
+Note:
+ * This script provides a basic example. You may need to modify it based on the specific formats of your input files (file1, file3) and the logic for extracting the desired value from file1.
+ * Consider using regular expressions for more robust value extraction, especially if the format of file1 is complex.
+ * Add error handling and logging for better debugging and monitoring.
+ * This script assumes that file3 contains a placeholder (e.g., {{value}}) to be replaced with the extracted value. You can adjust this placeholder or the replacement logic as needed.
