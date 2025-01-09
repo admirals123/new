@@ -1,27 +1,19 @@
 #!/bin/bash
 
-# Initialize an empty array to store the names
-names=()
+# Use yq to get all the .metadata.name values as a JSON array
+names_json=$(yq '.[].metadata.name' file1.yaml)
 
-# Use a loop to iterate through each line containing ".metadata.name" in file1
-while IFS= read -r line; do
-  # Extract the value after ".metadata.name:" using cut
-  name=$(echo "$line" | cut -d ':' -f2- | tr -d '[:space:]')
-  
-  # Check if the extracted value is not empty
-  if [[ -n "$name" ]]; then
-    # Add the extracted name to the array
-    names+=("$name")
-  fi
-done < file1
-
-# Check if any names were found
-if [[ ${#names[@]} -eq 0 ]]; then
-  echo "No '.metadata.name' values found in file1"
-else
-  # Print the array elements (names)
-  echo "Extracted names:"
-  for name in "${names[@]}"; do
-    echo "- $name"
-  done
+# Check if yq returned an empty array
+if [[ -z "$names_json" ]]; then
+  echo "No .metadata.name found in file1.yaml"
+  exit 1
 fi
+
+# Convert the JSON array to a bash array
+names_array=( $(echo "$names_json" | jq -r '.[]') )
+
+# Print the array elements
+echo "Names:"
+for name in "${names_array[@]}"; do
+  echo "- $name"
+done
