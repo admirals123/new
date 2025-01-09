@@ -1,0 +1,27 @@
+#!/bin/bash
+
+# Initialize an empty array to store the names
+names=()
+
+# Use a loop to iterate through each line containing ".metadata.name" in file1
+while IFS= read -r line; do
+  # Extract the value after ".metadata.name:" using cut
+  name=$(echo "$line" | cut -d ':' -f2- | tr -d '[:space:]')
+  
+  # Check if the extracted value is not empty
+  if [[ -n "$name" ]]; then
+    # Add the extracted name to the array
+    names+=("$name")
+  fi
+done < file1
+
+# Check if any names were found
+if [[ ${#names[@]} -eq 0 ]]; then
+  echo "No '.metadata.name' values found in file1"
+else
+  # Print the array elements (names)
+  echo "Extracted names:"
+  for name in "${names[@]}"; do
+    echo "- $name"
+  done
+fi
