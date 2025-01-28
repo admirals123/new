@@ -1,39 +1,26 @@
 #!/bin/bash
 
-# Input YAML file
-yaml_file="a.yaml"
+# Check if the service name is provided as an argument
+if [ -z "$1" ]; then
+  echo "Usage: $0 <new_service_name>"
+  exit 1
+fi
 
-# List of service names
-service_names=("service1" "service2" "service3")
+new_service_name="$1"
 
-# Loop through the service names
-for service_name in "${service_names[@]}"; do
-  # Create a new file name (e.g., a.yaml.service1, a.yaml.service2, etc.)
-  new_yaml_file="${yaml_file}.${service_name}"
+# Check if a.yaml exists
+if [ ! -f "a.yaml" ]; then
+  echo "Error: a.yaml not found."
+  exit 1
+fi
 
-  # Use sed to replace <service-name> with the current service_name and save to the new file
-  sed "s/<service-name>/${service_name}/g" "${yaml_file}" > "${new_yaml_file}"
+# Use sed to replace <service-name> with the new name.  The `-i` option
+# modifies the file in-place.  The `s///g` performs a global substitution
+# (all occurrences on each line).
 
-  echo "Created ${new_yaml_file} with service name: ${service_name}"
-done
+sed -i "s/<service-name>/$new_service_name/g" a.yaml
 
-echo "Finished processing."
+# Provide feedback to the user.
+echo "Replaced <service-name> with '$new_service_name' in a.yaml"
 
-Explanation:
- * #!/bin/bash: Shebang line, specifies the script should be executed with bash.
- * yaml_file="a.yaml": Sets the variable yaml_file to the name of your YAML file.
- * service_names=("service1" "service2" "service3"): Creates an array service_names containing the list of service names you want to use.
- * for service_name in "${service_names[@]}"; do ... done: Loops through each element in the service_names array.
- * new_yaml_file="${yaml_file}.${service_name}": Creates a new file name by appending the current service_name to the original yaml_file name.  This creates files like a.yaml.service1, a.yaml.service2, etc.
- * sed "s/<service-name>/${service_name}/g" "${yaml_file}" > "${new_yaml_file}": This is the core of the script.
-   * sed: Stream editor command, used for replacing text in files.
-   * "s/<service-name>/${service_name}/g":  The s command in sed stands for substitute. This part replaces all occurrences (g) of <service-name> with the current value of ${service_name}.
-   * "${yaml_file}": The input file.
-   * >: Redirects the output of the sed command to the new file.
- * echo "Created ${new_yaml_file} with service name: ${service_name}": Prints a message to the console indicating that a new file has been created.
- * echo "Finished processing.": Prints a message when the script is finished.
-How to use:
- * Save the script to a file (e.g., replace_names.sh).
- * Make the script executable: chmod +x replace_names.sh.
- * Run the script: ./replace_names.sh.
-This will create new YAML files for each service name in your list, with the <service-name> placeholder replaced.  Make sure that a.yaml exists in the same directory as the script.
+exit 0
