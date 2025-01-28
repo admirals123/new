@@ -1,26 +1,37 @@
 #!/bin/bash
 
-# Check if the service name is provided as an argument
-if [ -z "$1" ]; then
-  echo "Usage: $0 <new_service_name>"
-  exit 1
-fi
+# Service name to search for
+service_name="<service-name>"
 
-new_service_name="$1"
+# Array of replacement names
+replacement_names=("name1" "name2" "name3" "name4")  # Add your desired names here
 
-# Check if a.yaml exists
-if [ ! -f "a.yaml" ]; then
-  echo "Error: a.yaml not found."
-  exit 1
-fi
+# Input YAML file
+yaml_file="a.yaml"
 
-# Use sed to replace <service-name> with the new name.  The `-i` option
-# modifies the file in-place.  The `s///g` performs a global substitution
-# (all occurrences on each line).
+# Temporary file to store the modified YAML
+temp_file=$(mktemp)
 
-sed -i "s/<service-name>/$new_service_name/g" a.yaml
+# Iterate through the replacement names
+for name in "${replacement_names[@]}"; do
+  # Use sed to replace the service name in the YAML file
+  sed "s/\b${service_name}\b/${name}/g" "$yaml_file" > "$temp_file"
 
-# Provide feedback to the user.
-echo "Replaced <service-name> with '$new_service_name' in a.yaml"
+  # Optionally, print the modified YAML or save it to a new file for each replacement
+  # For printing:
+  cat "$temp_file"
 
-exit 0
+  # For saving to a new file for each replacement (e.g., a.yaml.1, a.yaml.2, etc.):
+  # new_file="${yaml_file}.${name}"  # Or a numbered sequence if you prefer
+  # mv "$temp_file" "$new_file"
+
+  # Update yaml_file for the next iteration so the *previous* replacement persists.
+  mv "$temp_file" "$yaml_file" # This is crucial for iterative replacements
+
+done
+
+# Clean up the temporary file (if you're not saving each version)
+rm "$temp_file"
+
+echo "Replacement complete."
+
