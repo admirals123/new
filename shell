@@ -1,20 +1,56 @@
 #!/bin/bash
 
-# File A (template YAML)
-template_file="file_a.yaml"
+# Template YAML file (replace <service-name> with the actual placeholder)
+template_file="template.yaml"
 
-# List of names to replace <service-name> with
-name_list=("service1" "service2" "service3" "another-service")
+# List of service names
+service_names=("service1" "service2" "service3" "service4" "service5")
 
-# Loop through each name in the list
-for service_name in "${name_list[@]}"; do
-  # Create the output filename
-  output_file="file_${service_name}.yaml"
+# Loop through each service name
+for service_name in "${service_names[@]}"; do
+  # Create a new file name
+  new_file="${service_name}.yaml"
 
-  # Use sed to replace <service-name> with the current name
-  sed "s/<service-name>/${service_name}/g" "$template_file" > "$output_file"
+  # Use sed to replace the placeholder and create the new file
+  sed "s/<service-name>/${service_name}/g" "$template_file" > "$new_file"
 
-  echo "Created $output_file"
+  echo "Created file: $new_file"
 done
 
-echo "Done!"
+echo "Finished creating YAML files."
+
+Explanation:
+ * #!/bin/bash:  Shebang line, specifies the script interpreter as bash.
+ * template_file="template.yaml":  Sets the variable template_file to the name of your template YAML file.  Make sure this file exists in the same directory as the script.  It should contain the YAML structure with <service-name> as the placeholder. Example template.yaml:
+   apiVersion: v1
+kind: Service
+metadata:
+  name: <service-name>
+spec:
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 8080
+  selector:
+    app: <service-name>
+
+ * service_names=("service1" "service2" ...):  An array containing the names you want to use to replace <service-name>.  Add or remove service names as needed.
+ * for service_name in "${service_names[@]}"; do ... done:  A loop that iterates through each element in the service_names array.
+ * new_file="${service_name}.yaml": Creates the name for the new YAML file by appending ".yaml" to the current service_name.
+ * sed "s/<service-name>/${service_name}/g" "$template_file" > "$new_file":  This is the core of the script.
+   * sed: The stream editor command.
+   * "s/<service-name>/${service_name}/g":  The substitution command.
+     * s/:  Indicates a substitution.
+     * <service-name>: The target string to be replaced (the placeholder).
+     * ${service_name}: The replacement string (the current service name from the loop).  The g flag ensures that all occurrences of <service-name> on each line are replaced.
+     * "$template_file": The input file (the template).
+     * >: Redirects the output of the sed command to the new file.
+   * "$new_file": The name of the new file being created.
+ * echo "Created file: $new_file": Prints a confirmation message to the console.
+ * echo "Finished creating YAML files.": Prints a completion message.
+How to use:
+ * Save the script to a file (e.g., create_yamls.sh).
+ * Make the script executable: chmod +x create_yamls.sh
+ * Create your template.yaml file in the same directory.
+ * Run the script: ./create_yamls.sh
+This will create new YAML files (e.g., service1.yaml, service2.yaml, etc.), each with the <service-name> placeholder replaced by the corresponding service name.
