@@ -1,37 +1,16 @@
 #!/bin/bash
 
 # Service name to search for
-service_name="<service-name>"
+service_name="<service>"
 
-# Array of replacement names
-replacement_names=("name1" "name2" "name3" "name4")  # Add your desired names here
+# Replacement name
+replacement_name="crs"
 
 # Input YAML file
 yaml_file="a.yaml"
 
-# Temporary file to store the modified YAML
-temp_file=$(mktemp)
-
-# Iterate through the replacement names
-for name in "${replacement_names[@]}"; do
-  # Use sed to replace the service name in the YAML file
-  sed "s/\b${service_name}\b/${name}/g" "$yaml_file" > "$temp_file"
-
-  # Optionally, print the modified YAML or save it to a new file for each replacement
-  # For printing:
-  cat "$temp_file"
-
-  # For saving to a new file for each replacement (e.g., a.yaml.1, a.yaml.2, etc.):
-  # new_file="${yaml_file}.${name}"  # Or a numbered sequence if you prefer
-  # mv "$temp_file" "$new_file"
-
-  # Update yaml_file for the next iteration so the *previous* replacement persists.
-  mv "$temp_file" "$yaml_file" # This is crucial for iterative replacements
-
-done
-
-# Clean up the temporary file (if you're not saving each version)
-rm "$temp_file"
+# Use sed to replace the service name in the YAML file
+sed -i "s/\b${service_name}\b/${replacement_name}/g" "$yaml_file"
 
 echo "Replacement complete."
 
