@@ -1,23 +1,23 @@
-SELECT count(*) FROM SyntheticCheck WHERE monitorName = 'your_monitor_name' AND result = 'SUCCESS' SINCE 1 day ago
+#!/bin/bash
 
+# Array of service names to replace
+service_names=("service1" "service2" "service3" "another-service")
 
+# YAML file to modify
+yaml_file="a.yaml"
 
-SELECT percentage(count(*), WHERE result = 'SUCCESS') AS 'Success Rate', 
-       percentage(count(*), WHERE result != 'SUCCESS') AS 'Failure Rate' 
-FROM SyntheticCheck 
-WHERE monitorName IN ('Monitor A', 'Monitor B', 'Monitor C') 
-  AND timestamp SINCE 1 year ago 
-FACET monitorName TIMESERIES 
+# Loop through the service names
+for service_name in "${service_names[@]}"; do
+  # Use sed to replace <service-name> with the current service_name
+  # The -i option edits the file in place
+  sed -i "s/<service-name>/$service_name/g" "$yaml_file"
 
+  # Optional: Create a backup of the original file before each replacement.
+  # cp "$yaml_file" "$yaml_file.bak" # Uncomment if needed
 
+done
 
+echo "Replacement complete."
 
-
-SELECT percentage(count(*), WHERE result = 'SUCCESS') AS 'Success Rate', 
-       percentage(count(*), WHERE result != 'SUCCESS') AS 'Failure Rate' 
-FROM SyntheticCheck 
-WHERE monitorName IN ('Monitor A', 'Monitor B', 'Monitor C') 
-FACET monitorName TIMESERIES 
-
-
-SELECT percentage(count(*), WHERE result = 'SUCCESS') AS 'Success Rate', percentage(count(*), WHERE result != 'SUCCESS') AS 'Failure Rate' FROM SyntheticCheck FACET monitorName TIMESERIES 
+# Optional: Print the modified YAML file (for verification)
+# cat "$yaml_file" 
