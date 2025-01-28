@@ -1,0 +1,20 @@
+#!/bin/bash
+
+# File A (template YAML)
+template_file="file_a.yaml"
+
+# List of names to replace <service-name> with
+name_list=("service1" "service2" "service3" "another-service")
+
+# Loop through each name in the list
+for service_name in "${name_list[@]}"; do
+  # Create the output filename
+  output_file="file_${service_name}.yaml"
+
+  # Use sed to replace <service-name> with the current name
+  sed "s/<service-name>/${service_name}/g" "$template_file" > "$output_file"
+
+  echo "Created $output_file"
+done
+
+echo "Done!"
