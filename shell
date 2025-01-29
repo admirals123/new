@@ -1,10 +1,24 @@
 #!/bin/bash
 
-# Extract metadata:name: value from file1.yaml
-name_value=$(grep -oP 'metadata:\s*name:\s*\K\w+' file1.yaml)
+# Extract the 'name' value from the YAML file
+name_value=$(yq e '.metadata.name' file1.yaml)
+
+# Check if name_value is empty
+if [[ -z "$name_value" ]]; then
+  echo "Error: Could not extract name value from file1.yaml"
+  exit 1
+fi
 
 # Display the extracted value
 echo "Extracted name_value: $name_value"
+
+# **New lines of code to be added here:**
+
+# Example 1: Create a backup of file2 before modification
+cp -p file2 file2.bak
+
+# Example 2: Log the replacement to a file
+echo "Replaced <secret-name> with $name_value in file2" >> replacement_log.txt
 
 # Replace <secret-name> in file2 with the extracted value
 sed -i "s/<secret-name>/$name_value/g" file2
