@@ -12,13 +12,44 @@ fi
 # Display the extracted value
 echo "Extracted name_value: $name_value"
 
-# **New lines of code to be added here:**
+#!/bin/bash
 
-# Example 1: Create a backup of file2 before modification
-cp -p file2 file2.bak
+# Initialize an empty array to store the names
+name_values=()
 
-# Example 2: Log the replacement to a file
-echo "Replaced <secret-name> with $name_value in file2" >> replacement_log.txt
+# Loop through all YAML files (you can modify this to specify specific files)
+for file in *.yaml; do  # Or specify files like: for file in file1.yaml file2.yaml; do
+  # Extract the 'name' value from the YAML file
+  name_value=$(yq e '.metadata.name' "$file")
 
-# Replace <secret-name> in file2 with the extracted value
-sed -i "s/<secret-name>/$name_value/g" file2
+  # Check if name_value is empty.  If empty, you might want to skip or handle differently.
+  if [[ -z "$name_value" ]]; then
+    echo "Warning: Could not extract name value from $file. Skipping."
+    continue  # Skip to the next file
+    # OR, if you want the script to exit on error:
+    # echo "Error: Could not extract name value from $file"
+    # exit 1
+  fi
+
+  # Add the extracted value to the array
+  name_values+=("$name_value")
+done
+
+
+# Display the extracted values from the array
+echo "Extracted name_values:"
+# Use a loop to handle potential whitespace or special characters in names.
+for name in "${name_values[@]}"; do
+  echo "$name"
+done
+
+# Or, to display all names on one line (space-separated):
+# echo "${name_values[@]}"
+
+# Or, to display all names comma separated:
+# IFS=',' ; echo "${name_values[*]}"
+
+# Example of accessing individual elements of the array:
+# echo "First name: ${name_values[0]}"
+# echo "Second name: ${name_values[1]}"
+# echo "Number of names: ${#name_values[@]}"
