@@ -1,7 +1,7 @@
 #!/bin/bash
 
-# Extract the 'name' value from the YAML file
-name_value=$(yq e '.metadata.name' file1.yaml)
+# Extract metadata:name: value from file1.yaml
+name_value=$(grep -oP 'metadata:\s*name:\s*\K\w+' file1.yaml)
 
 # Check if name_value is empty
 if [[ -z "$name_value" ]]; then
@@ -11,45 +11,3 @@ fi
 
 # Display the extracted value
 echo "Extracted name_value: $name_value"
-
-#!/bin/bash
-
-# Initialize an empty array to store the names
-name_values=()
-
-# Loop through all YAML files (you can modify this to specify specific files)
-for file in *.yaml; do  # Or specify files like: for file in file1.yaml file2.yaml; do
-  # Extract the 'name' value from the YAML file
-  name_value=$(yq e '.metadata.name' "$file")
-
-  # Check if name_value is empty.  If empty, you might want to skip or handle differently.
-  if [[ -z "$name_value" ]]; then
-    echo "Warning: Could not extract name value from $file. Skipping."
-    continue  # Skip to the next file
-    # OR, if you want the script to exit on error:
-    # echo "Error: Could not extract name value from $file"
-    # exit 1
-  fi
-
-  # Add the extracted value to the array
-  name_values+=("$name_value")
-done
-
-
-# Display the extracted values from the array
-echo "Extracted name_values:"
-# Use a loop to handle potential whitespace or special characters in names.
-for name in "${name_values[@]}"; do
-  echo "$name"
-done
-
-# Or, to display all names on one line (space-separated):
-# echo "${name_values[@]}"
-
-# Or, to display all names comma separated:
-# IFS=',' ; echo "${name_values[*]}"
-
-# Example of accessing individual elements of the array:
-# echo "First name: ${name_values[0]}"
-# echo "Second name: ${name_values[1]}"
-# echo "Number of names: ${#name_values[@]}"
