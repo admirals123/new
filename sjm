@@ -3,10 +3,10 @@
 name_values=()
 
 for file in *.eso.yml; do
-  # Use yq to iterate over ALL documents in the file
-  yq eval 'select(file | test("\\.eso\\.yml$")).document | .metadata.name' "$file" | while read name_value; do
+  # Use single quotes for the entire yq expression
+  yq eval 'select(file | test("\\.eso\\.yml$")).document | .metadata.name' "$file" | while IFS= read -r name_value; do
     if [[ -z "$name_value" ]]; then
-      echo "Could not extract name value from a document in $file. Skipping."  # More specific message
+      echo "Could not extract name value from a document in $file. Skipping."
     else
       name_values+=("$name_value")
     fi
