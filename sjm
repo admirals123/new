@@ -1,16 +1,19 @@
 #!/bin/bash
 
-# Service name to search for
-service_name="<service>"
+name_values=()
 
-# Replacement name
-replacement_name="crs"
+for file in *.eso.yml; do
+  # Use yq to iterate over ALL documents in the file
+  yq eval 'select(file | test("\\.eso\\.yml$")).document | .metadata.name' "$file" | while read name_value; do
+    if [[ -z "$name_value" ]]; then
+      echo "Could not extract name value from a document in $file. Skipping."  # More specific message
+    else
+      name_values+=("$name_value")
+    fi
+  done
+done
 
-# Input YAML file
-yaml_file="a.yaml"
-
-# Use sed to replace the service name in the YAML file
-sed -i "s/\b${service_name}\b/${replacement_name}/g" "$yaml_file"
-
-echo "Replacement complete."
-
+# Print each name on a separate line
+for name in "${name_values[@]}"; do
+  echo "$name"
+done
