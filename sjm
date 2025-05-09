@@ -1,19 +1,139 @@
-#!/bin/bash
+Based on the updated structure shown in the image, where you’ve organized the rbac folder into region-specific subfolders (region-na for North America clusters including CA and US, and region-asia with subfolders asia and asia-rtm) within the common-manifests-k8s-catalog repository, I’ll modify the documentation accordingly. Since you haven’t used patches yet, I’ll include guidance on optionally implementing Kustomize patches for the Asia cluster delta (e.g., PowerUserClusterROLE with different ACLs) while keeping the documentation flexible for your current setup.
+Below is the revised documentation:
 
-name_values=()
+RBAC Consolidation Across GitOps Repositories
+Overview
+This document describes the process of consolidating the rbac folder across multiple GitOps repositories into a common catalog repository (common-manifests-k8s-catalog). The structure includes region-specific subfolders (region-na for North America clusters, and region-asia with asia and asia-rtm subfolders) to manage cluster-specific configurations. It also provides guidance on handling deltas (e.g., PowerUserClusterROLE in the Asia cluster) using Kustomize patches if needed.
+Objective
+	•	Eliminate code duplication by centralizing the rbac folder in a common repository.
+	•	Organize configurations by region (NA for CA and US clusters, Asia for asia and asia-rtm clusters).
+	•	Ensure all clusters pull the appropriate rbac configuration.
+	•	Optionally handle deviations (e.g., Asia cluster’s PowerUserClusterROLE ACLs) without disrupting operations.
+Implementation Steps
+1. Common Catalog Repository Structure
+	•	Repository: https://github.com/mfc-gwam-platops-common-manifests-k8s-catalog
+	•	Structure:
+	◦	rbac/
+	▪	common/: Shared RBAC configurations applicable to all clusters.
+	▪	nonprod/: RBAC configurations for non-production environments (if applicable).
+	▪	prod/: RBAC configurations for production environments (if applicable).
+	▪	region-na/: RBAC configurations for North America clusters (CA and US).
+	▪	region-asia/
+	▪	asia/: RBAC configurations for the Asia cluster.
+	▪	asia-rtm/: RBAC configurations for the Asia RTM cluster (if distinct).
+	•	Action:
+	◦	Extract the rbac folder from existing cluster repositories and organize it into the above structure.
+	◦	Commit and push to the main branch.
+	◦	Update CODEOWNERS, pull_request_template.md, and README.md to reflect ownership and contribution guidelines.
+2. Update Cluster Repositories with Flux
+	•	Tool: Flux (assumed based on “flux repos” mention)
+	•	Action:
+	◦	Remove the rbac folder from each cluster’s GitOps repository.
+	◦	Add a GitRepository resource to point to the common catalog: apiVersion: source.toolkit.fluxcd.io/v1
+	◦	kind: GitRepository
+	◦	metadata:
+	◦	  name: common-catalog
+	◦	  namespace: flux-system
+	◦	spec:
+	◦	  interval: 5m
+	◦	  url: https://github.com/mfc-gwam-platops-common-manifests-k8s-catalog.git
+	◦	  ref:
+	◦	    branch: main
+	◦	
+	◦	Add a Kustomization resource tailored to each cluster’s region:
+	▪	For NA clusters (CA and US): apiVersion: kustomize.toolkit.fluxcd.io/v1
+	▪	kind: Kustomization
+	▪	metadata:
+	▪	  name: cluster-rbac-na
+	▪	  namespace: flux-system
+	▪	spec:
+	▪	  interval: 10m
+	▪	  path: ./rbac/region-na
+	▪	  prune: true
+	▪	  sourceRef:
+	▪	    kind: GitRepository
+	▪	    name: common-catalog
+	▪	
+	▪	For Asia cluster: apiVersion: kustomize.toolkit.fluxcd.io/v1
+	▪	kind: Kustomization
+	▪	metadata:
+	▪	  name: cluster-rbac-asia
+	▪	  namespace: flux-system
+	▪	spec:
+	▪	  interval: 10m
+	▪	  path: ./rbac/region-asia/asia
+	▪	  prune: true
+	▪	  sourceRef:
+	▪	    kind: GitRepository
+	▪	    name: common-catalog
+	▪	
+	▪	For Asia RTM cluster (if needed): apiVersion: kustomize.toolkit.fluxcd.io/v1
+	▪	kind: Kustomization
+	▪	metadata:
+	▪	  name: cluster-rbac-asia-rtm
+	▪	  namespace: flux-system
+	▪	spec:
+	▪	  interval: 10m
+	▪	  path: ./rbac/region-asia/asia-rtm
+	▪	  prune: true
+	▪	  sourceRef:
+	▪	    kind: GitRepository
+	▪	    name: common-catalog
+	▪	
+	◦	Commit and push changes to each cluster’s repository.
+	◦	Flux will apply the appropriate rbac configuration based on the path specified.
+3. Optional: Handle Delta for Asia Cluster
+	•	Delta: The PowerUserClusterROLE in the Asia cluster may have different ACLs.
+	•	Action (Optional):
+	◦	If a delta exists, use Kustomize patches in the Asia cluster’s GitOps repository to modify the base configuration from rbac/region-asia/asia.
+	◦	Create a kustomization.yaml in the Asia cluster’s repository: apiVersion: kustomize.config.k8s.io/v1beta1
+	◦	kind: Kustomization
+	◦	resources:
+	◦	  - github.com/mfc-gwam-platops-common-manifests-k8s-catalog/rbac/region-asia/asia?ref=main
+	◦	patches:
+	◦	  - path: patches/poweruser-role-patch.yaml
+	◦	    target:
+	◦	      kind: Role
+	◦	      name: PowerUserClusterROLE
+	◦	
+	◦	Create a patch file patches/poweruser-role-patch.yaml (example): apiVersion: rbac.authorization.k8s.io/v1
+	◦	kind: Role
+	◦	metadata:
+	◦	  name: PowerUserClusterROLE
+	◦	rules:
+	◦	  - apiGroups: [""]
+	◦	    resources: ["pods"]
+	◦	    verbs: ["get", "list", "watch", "create", "delete"] # Adjust based on actual delta
+	◦	
+	◦	Commit and push to the Asia cluster’s repository.
+	◦	Note: If no delta is currently needed, this step can be skipped, and the base configuration in rbac/region-asia/asia can be used as-is.
+4. Validate and Deploy
+	•	Testing:
+	◦	Test in a staging cluster to ensure:
+	▪	The correct rbac subfolder (e.g., region-na or region-asia/asia) is applied.
+	▪	Optional patches (if used) apply correctly without issues.
+	▪	No resources are disrupted (verify with prune: true).
+	•	Deployment:
+	◦	Roll out to production clusters one at a time (e.g., NA clusters first, then Asia).
+	◦	Monitor with Kubernetes events or Prometheus to confirm no disruptions.
+5. Verification
+	•	Checks:
+	◦	Confirm NA clusters (CA and US) use rbac/region-na.
+	◦	Confirm Asia cluster uses rbac/region-asia/asia (and Asia RTM uses rbac/region-asia/asia-rtm if distinct).
+	◦	If patches are applied, validate PowerUserClusterROLE in the Asia cluster has the correct ACLs.
+	•	Documentation Update:
+	◦	Update team READMEs or wikis with the new structure and any applied patches.
+Benefits
+	•	Eliminates code duplication by centralizing rbac configurations.
+	•	Supports region-specific configurations with a clear folder structure.
+	•	Allows for flexible delta management using Kustomize patches (if needed).
+Contact
+	•	Owner: [Your Name/Team]
+	•	Support: Platform Engineering Team
 
-for file in *.eso.yml; do
-  # Use single quotes for the entire yq expression
-  yq eval 'select(file | test("\\.eso\\.yml$")).document | .metadata.name' "$file" | while IFS= read -r name_value; do
-    if [[ -z "$name_value" ]]; then
-      echo "Could not extract name value from a document in $file. Skipping."
-    else
-      name_values+=("$name_value")
-    fi
-  done
-done
-
-# Print each name on a separate line
-for name in "${name_values[@]}"; do
-  echo "$name"
-done
+Notes
+	•	The region-na folder serves as the common configuration for CA and US clusters. Adjust its contents to reflect shared settings.
+	•	The region-asia folder includes asia and asia-rtm subfolders. Ensure asia contains the base configuration, and asia-rtm is used if RTM has distinct requirements.
+	•	If the Asia delta (e.g., PowerUserClusterROLE) becomes necessary, implement the patch as described. Otherwise, rely on the base configuration in rbac/region-asia/asia.
+	•	Store this documentation in the common-manifests-k8s-catalog repository (e.g., as README.md or rbac-consolidation.md).
+Let me know if you need further refinements or help with specific configurations!
