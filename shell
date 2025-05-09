@@ -1,13 +1,116 @@
-#!/bin/bash
+Based on your clarification that you haven’t used patches and have instead relied on Kustomization based on region and retirement (likely meaning “environment” or specific cluster contexts like asia-rtm), I’ll adjust the documentation to reflect this. The focus will remain on the region-specific Kustomization setup without mentioning patches, and I’ll refine the language to align with your current implementation.
 
-# Extract metadata:name: value from file1.yaml
-name_value=$(grep -oP 'metadata:\s*name:\s*\K\w+' file1.yaml)
+RBAC Consolidation Across GitOps Repositories
+Overview
+This document describes the process of consolidating the rbac folder across multiple GitOps repositories into a common catalog repository (common-manifests-k8s-catalog). The structure includes region-specific subfolders (region-na for North America clusters including CA and US, and region-asia with asia and asia-rtm subfolders) to manage cluster-specific configurations based on region and environment.
+Objective
+	•	Eliminate code duplication by centralizing the rbac folder in a common repository.
+	•	Organize configurations by region (NA for CA and US clusters, Asia for asia and asia-rtm environments).
+	•	Ensure all clusters pull the appropriate rbac configuration using region- and environment-specific Kustomizations.
+Implementation Steps
+1. Common Catalog Repository Structure
+	•	Repository: https://github.com/mfc-gwam-platops-common-manifests-k8s-catalog
+	•	Structure:
+	◦	rbac/
+	▪	common/: Shared RBAC configurations applicable to all clusters.
+	▪	nonprod/: RBAC configurations for non-production environments (if applicable).
+	▪	prod/: RBAC configurations for production environments (if applicable).
+	▪	region-na/: RBAC configurations for North America clusters (CA and US).
+	▪	region-asia/
+	▪	asia/: RBAC configurations for the Asia cluster.
+	▪	asia-rtm/: RBAC configurations for the Asia RTM environment (e.g., retirement or a specific variant).
+	•	Action:
+	◦	Extract the rbac folder from existing cluster repositories and organize it into the above structure.
+	◦	Commit and push to the main branch.
+	◦	Update CODEOWNERS, pull_request_template.md, and README.md to reflect ownership and contribution guidelines.
+2. Update Cluster Repositories with Flux
+	•	Tool: Flux (assumed based on “flux repos” mention)
+	•	Action:
+	◦	Remove the rbac folder from each cluster’s GitOps repository.
+	◦	Add a GitRepository resource to point to the common catalog: apiVersion: source.toolkit.fluxcd.io/v1
+	◦	kind: GitRepository
+	◦	metadata:
+	◦	  name: common-catalog
+	◦	  namespace: flux-system
+	◦	spec:
+	◦	  interval: 5m
+	◦	  url: https://github.com/mfc-gwam-platops-common-manifests-k8s-catalog.git
+	◦	  ref:
+	◦	    branch: main
+	◦	
+	◦	Add a Kustomization resource tailored to each cluster’s region and environment:
+	▪	For NA clusters (CA and US): apiVersion: kustomize.toolkit.fluxcd.io/v1
+	▪	kind: Kustomization
+	▪	metadata:
+	▪	  name: cluster-rbac-na
+	▪	  namespace: flux-system
+	▪	spec:
+	▪	  interval: 10m
+	▪	  path: ./rbac/region-na
+	▪	  prune: true
+	▪	  sourceRef:
+	▪	    kind: GitRepository
+	▪	    name: common-catalog
+	▪	
+	▪	For Asia cluster: apiVersion: kustomize.toolkit.fluxcd.io/v1
+	▪	kind: Kustomization
+	▪	metadata:
+	▪	  name: cluster-rbac-asia
+	▪	  namespace: flux-system
+	▪	spec:
+	▪	  interval: 10m
+	▪	  path: ./rbac/region-asia/asia
+	▪	  prune: true
+	▪	  sourceRef:
+	▪	    kind: GitRepository
+	▪	    name: common-catalog
+	▪	
+	▪	For Asia RTM environment: apiVersion: kustomize.toolkit.fluxcd.io/v1
+	▪	kind: Kustomization
+	▪	metadata:
+	▪	  name: cluster-rbac-asia-rtm
+	▪	  namespace: flux-system
+	▪	spec:
+	▪	  interval: 10m
+	▪	  path: ./rbac/region-asia/asia-rtm
+	▪	  prune: true
+	▪	  sourceRef:
+	▪	    kind: GitRepository
+	▪	    name: common-catalog
+	▪	
+	◦	Commit and push changes to each cluster’s repository.
+	◦	Flux will apply the appropriate rbac configuration based on the path specified for each region and environment.
+3. Validate and Deploy
+	•	Testing:
+	◦	Test in a staging cluster to ensure:
+	▪	The correct rbac subfolder (e.g., region-na, region-asia/asia, or region-asia/asia-rtm) is applied.
+	▪	No resources are disrupted (verify with prune: true).
+	•	Deployment:
+	◦	Roll out to production clusters one at a time (e.g., NA clusters first, then Asia and Asia RTM).
+	◦	Monitor with Kubernetes events or Prometheus to confirm no disruptions.
+4. Verification
+	•	Checks:
+	◦	Confirm NA clusters (CA and US) use rbac/region-na.
+	◦	Confirm Asia cluster uses rbac/region-asia/asia.
+	◦	Confirm Asia RTM environment uses rbac/region-asia/asia-rtm (if applicable).
+	•	Documentation Update:
+	◦	Update team READMEs or wikis with the new structure.
+Benefits
+	•	Eliminates code duplication by centralizing rbac configurations.
+	•	Supports region- and environment-specific configurations with a clear folder structure.
+	•	Simplifies management using Flux Kustomizations.
+Contact
+	•	Owner: [Your Name/Team]
+	•	Support: Platform Engineering Team
 
-# Check if name_value is empty
-if [[ -z "$name_value" ]]; then
-  echo "Error: Could not extract name value from file1.yaml"
-  exit 1
-fi
+Notes
+	•	The region-na folder serves as the common configuration for CA and US clusters. Adjust its contents to reflect shared settings.
+	•	The region-asia folder includes asia for the main Asia cluster and asia-rtm for the RTM environment (e.g., retirement or a specific variant). Ensure each subfolder contains the appropriate configuration.
+	•	Store this documentation in the common-manifests-k8s-catalog repository (e.g., as README.md or rbac-consolidation.md).
 
-# Display the extracted value
-echo "Extracted name_value: $name_value"
+Changes Made
+	1	Removed the “Optional: Handle Delta for Asia Cluster” section since you’re not using patches.
+	2	Adjusted the focus to emphasize region- and environment-specific Kustomizations (e.g., region-na, region-asia/asia, and region-asia/asia-rtm).
+	3	Clarified that asia-rtm is treated as an environment variant (e.g., retirement), aligning with your mention of “retirement.”
+	4	Streamlined the document to reflect your current implementation without patches.
+Let me know if you need further tweaks!
