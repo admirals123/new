@@ -1,1 +1,1 @@
-curl -O https://raw.githubusercontent.com/mfc-gwam-platops/src-aks-flux-usr/main/clusters/prod-usc/locals/namespace/ns-gwam-usr-b2cexpi-prod-usc/ingress/ns-gwam-usr-b2cexpi-ingress-gw.yaml
+curl -O -H "Authorization: token <your-personal-access-token>" https://raw.githubusercontent.com/mfc-gwam-platops/src-aks-flux-usr/main/clusters/prod-usc/locals/namespace/ns-gwam-usr-b2cexpi-prod-usc/ingress/ns-gwam-usr-b2cexpi-ingress-gw.yaml
