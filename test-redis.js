@@ -1,1 +1,4 @@
-curl -O -H "Authorization: token <your-personal-access-token>" https://raw.githubusercontent.com/mfc-gwam-platops/src-aks-flux-usr/main/clusters/prod-usc/locals/namespace/ns-gwam-usr-b2cexpi-prod-usc/ingress/ns-gwam-usr-b2cexpi-ingress-gw.yaml
+Set-ExecutionPolicy Bypass -Scope Process -Force; [System.Net.ServicePointManager]::SecurityProtocol = [System.Net.ServicePointManager]::SecurityProtocol -bor 3072; iex ((New-Object System.Net.WebClient).DownloadString('https://community.chocolatey.org/install.ps1'))
+
+choco install kubernetes-helm
+
