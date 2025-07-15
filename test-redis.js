@@ -1,1 +1,1 @@
-The current production deadline is set for the end of September. However, I propose completing the project in advance. By working in teams and tailoring support to each team’s specific needs, we can distribute the workload effectively. This approach will prevent us from becoming overwhelmed toward the end, ensuring a smoother process and higher-quality output.
+az resource list --tag owner=GWAM_TECH --resource-type Microsoft.ManagedIdentity/userAssignedIdentities --query "[].{Name:name, ResourceGroup:resourceGroup, Location:location, ID:id}" -o table
