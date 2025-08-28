@@ -64,3 +64,8 @@ Tips
 	•	Simplify: If live setup lags, use screenshots for ingress or monitor creation.
 	•	Engage: Ask, “What endpoints would you monitor?” to involve the team.
 This script keeps it straightforward, focusing on the key steps and explaining the PROD-CAC-UAT workaround briefly. Once you share the dashboard screenshots, I’ll update the results section with specific callouts! Let me know if you need adjustments.
+
+
+
+
+SJM runs checks from private locations, ensuring we monitor internal apps without public exposure. Our workflow adds security: App teams add endpoints to our Git sjmrepo first, then we whitelist ingress IPs in the namespace, before creating monitors in New Relic.
