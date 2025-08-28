@@ -69,3 +69,11 @@ This script keeps it straightforward, focusing on the key steps and explaining t
 
 
 SJM runs checks from private locations, ensuring we monitor internal apps without public exposure. Our workflow adds security: App teams add endpoints to our Git sjmrepo first, then we whitelist ingress IPs in the namespace, before creating monitors in New Relic.
+
+Once the endpoint is in Git, we update the specific namespace to allow ingress from SJM’s IP. This ensures the monitor can reach the endpoint without opening it wide
+
+Now, with the endpoint prepped, the app team creates the monitor in New Relic and assigns it to our SJM private location
+
+SJM pulls the job, runs the synthetic check from our private setup, and reports back
+
+That’s our end-to-end flow. Key takeaways: Secure via Git and ingress controls, scalable with SJM. Questions? For app teams, start by adding to sjmrepo
