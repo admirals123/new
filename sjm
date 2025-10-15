@@ -1,1 +1,7 @@
-https://raw.githubusercontent.com/kubernetes/autoscaler/master/vertical-pod-autoscaler/deploy/vpa-upstream.yaml
+mkdir /tmp/vpa-tls && cd /tmp/vpa-tls
+openssl genrsa -out ca.key 2048
+openssl req -new -x509 -days 3650 -key ca.key -out ca.crt -subj "/CN=vpa-tls-ca"
+openssl genrsa -out tls.key 2048
+openssl req -new -key tls.key -out webhook.csr -subj "/CN=vpa-admission-controller.vpa.svc"
+openssl x509 -req -in webhook.csr -CA ca.crt -CAkey ca.key -CAcreateserial -out tls.crt -days 365
+rm webhook.csr ca.srl
