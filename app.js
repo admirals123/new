@@ -139,3 +139,59 @@ If you want, I can also:
 * Or map this specifically to your stack (Azure + Flux + New Relic)
 
 Just tell me 👍
+
+
+
+
+
+
+
+
+You’re very close, just tighten the wording a bit and fix the terminology:
+
+* It’s Custom Resource Definition (CRD), not “cluster resource definition”
+* And yes — the CRD must already be installed in the cluster (via Chaos Mesh), otherwise Flux can’t apply the custom resources
+
+Here’s the corrected and cleaned-up Plan B 👇
+
+⸻
+
+🚀 Updated Plan B (Flux + Chaos Mesh CRD)
+
+Description
+
+Implement a GitOps-based approach for chaos experiments using Flux and Chaos Mesh.
+
+In this model, the Kubernetes cluster must have Chaos Mesh installed, including its Custom Resource Definitions (CRDs). GitHub Actions will commit Chaos Mesh custom resources (e.g., experiment manifests) into the repository. Flux will detect these changes and reconcile them by applying the resources to the cluster, triggering the chaos experiments.
+
+This approach ensures full alignment with GitOps principles, where all changes are declarative and managed through version control.
+
+⸻
+
+✅ Acceptance Criteria
+
+* Chaos Mesh is installed in the cluster, including all required CRDs (Custom Resource Definitions)
+* Flux is configured to monitor the repository and reconcile changes to the cluster
+* A valid Chaos Mesh experiment manifest (custom resource) is defined
+* GitHub Action can commit/update the chaos manifest in the repository
+* Flux successfully detects the change and applies the resource to the cluster
+* Chaos experiment is executed in the target environment (e.g., dev)
+* Time-bound or controlled execution is defined within the manifest (e.g., duration, schedule, or TTL)
+* Changes are auditable via Git history (PR-based workflow preferred)
+* Limitations in observability (vs direct execution) are documented
+* RBAC and permissions required for Flux to apply Chaos Mesh resources are validated
+
+⸻
+
+🧠 Optional Clarifying Line (if you want to make it extra clear)
+
+You can add this to the description if needed:
+
+“This approach assumes that the cluster is already bootstrapped with Chaos Mesh and its CRDs, as Flux can only reconcile resources that the Kubernetes API recognizes.”
+
+⸻
+
+If you want next level polish, I can also:
+
+* Give you a sample Chaos Mesh experiment YAML
+* Or show how to structure the repo so Flux picks it up cleanly (very important for demos)
