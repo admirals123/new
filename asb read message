@@ -1,31 +1,209 @@
-OK, here's the modified CronJob configuration to delete a specific PipelineRun after 1 minute:
-apiVersion: batch/v1
-kind: CronJob
-metadata:
-  name: pipelinerun-cleanup
-spec:
-  schedule: "* * * * *" # Run every minute
-  jobTemplate:
-    spec:
-      template:
-        spec:
-          containers:
-          - name: cleanup
-            image: bitnami/kubectl 
-            args:
-            - delete
-            - pipelinerun
-            - "<PIPELINERUN_NAME>" # Replace with the actual PipelineRun name
-            - --field-selector=metadata.creationTimestamp<$(date -d '1 minute ago' +%Y-%m-%dT%H:%M:%SZ)
-          restartPolicy: OnFailure
+Here’s a clear, structured breakdown of what just happened and what you need to do next—cutting through the noise and focusing on execution.
 
-Key Changes:
- * Schedule: Changed to "* * * * *" to run the job every minute.
- * Args:
-   * Removed --all since you're targeting a single PipelineRun.
-   * Added <PIPELINERUN_NAME> as a placeholder. Replace this with the actual name of the PipelineRun you want to delete.
-   * Modified the date command to calculate 1 minute ago.
-How to Use:
- * Replace Placeholder: Edit the file, replacing <PIPELINERUN_NAME> with the correct name.
- * Apply (If New): If you haven't created the CronJob before, use kubectl apply -f pipelinerun-cleanup.yaml.
- * Update (If Existing): If you're modifying an existing CronJob, use kubectl apply -f pipelinerun-cleanup.yaml again to update it.
+⸻
+
+🔑 Big Picture
+
+* Plan A (short-term) → unblock demo fast
+    * Uses kubectl apply/delete (push model)
+    * Better observability
+    * Not scalable / not target state
+* Plan B (target state) → long-term solution
+    * Uses Flux / Tenant Ops (pull model)
+    * Scalable + policy-compliant (Kyverno, etc.)
+    * Has lifecycle concerns (files persist, chaos may re-trigger unless handled properly)
+
+👉 Decision:
+
+* Do Plan A NOW for demo
+* Continue building Plan B in parallel
+
+⸻
+
+⚠️ Key Technical Insights from the Call
+
+1. Plan A vs Plan B Difference
+
+* Plan A
+    * GitHub Action → logs into cluster → kubectl apply
+    * Waits → kubectl delete
+    * Fully controlled lifecycle
+* Plan B
+    * GitHub → commit YAML → Flux pulls into cluster
+    * YAML stays in repo → Flux keeps reconciling
+    * Risk: chaos might re-run repeatedly if not cleaned up
+
+👉 Open question you need to validate:
+
+* Does Chaos Mesh support true time-bound execution (run once and stop)?
+* Or does it re-trigger because the resource still exists?
+
+⸻
+
+2. Authentication Problem (Critical)
+
+You explored OIDC (federation):
+
+* ❌ Not scalable:
+    * Each tenant repo needs federation setup
+    * Azure has limits (~10–20 federations per identity)
+    * You have ~100 tenants → this breaks
+
+👉 Conclusion:
+
+* OIDC is NOT viable for Plan A at scale
+
+⸻
+
+3. What to Use Instead (for Plan A)
+
+👉 Use “old” service principal / credentials approach via GitHub environments
+
+Pattern:
+
+* GitHub Actions → use environment-based secrets
+* Each environment contains:
+    * clientId
+    * clientSecret
+    * tenantId
+    * subscriptionId
+
+This is already used in platform workflows (VPA example).
+
+⸻
+
+4. Where Code Should Live (Important Design Rule)
+
+* ❌ Don’t put logic in each tenant repo
+* ✅ Use central reusable workflow (Tenant Ops)
+
+Why:
+
+* You avoid updating 100 repos
+* You keep logic hidden + maintainable
+
+👉 Tenant repos should only:
+
+* Pass parameters
+* Call reusable workflow
+
+⸻
+
+5. Temporary Federation Hack (If Needed)
+
+If you must use OIDC for demo:
+
+* Add federation in AKS managed identity (TPL)
+* Reuse existing structure
+* ⚠️ MUST:
+    * Inform Alexi
+    * Remove after demo
+    * Not exceed federation limits
+
+⸻
+
+✅ What YOU Need To Do Now
+
+🔹 Step 1 — Secrets Setup (Immediate Blocker)
+
+* Prashant sends you:
+    * 4 values:
+        * client ID
+        * client secret
+        * tenant ID
+        * subscription ID
+
+👉 You:
+
+* Add them to GitHub repo (Tenant Ops or environment secrets)
+
+⸻
+
+🔹 Step 2 — Implement Plan A Workflow
+
+In Tenant Ops reusable workflow:
+
+1. Login to Azure
+2. Get AKS credentials
+3. Run:
+    * kubectl apply -f chaos.yaml
+4. Wait (e.g., 60 sec)
+5. Run:
+    * kubectl delete -f chaos.yaml
+
+⸻
+
+🔹 Step 3 — Keep Tenant Repos Minimal
+
+Tenant repo should only:
+
+* Call reusable workflow
+* Pass:
+    * parameters
+    * environment
+
+👉 No business logic inside tenant repos
+
+⸻
+
+🔹 Step 4 — Run End-to-End Test
+
+* Trigger GitHub Action
+* Validate:
+    * Chaos applied
+    * Chaos stopped after delete
+    * Logs visible (observability goal)
+
+⸻
+
+🔹 Step 5 — Parallel Work (Plan B)
+
+After demo is unblocked:
+
+Investigate:
+
+A. Lifecycle Problem
+
+* Does chaos stop automatically?
+* Or does Flux re-trigger it?
+
+B. Cleanup Strategy
+
+* Auto-delete via PR?
+* TTL / time-bound spec?
+* Separate cleanup controller?
+
+⸻
+
+🔹 Step 6 — Avoid These Pitfalls
+
+* ❌ Don’t scale OIDC per tenant
+* ❌ Don’t duplicate workflows in 100 repos
+* ❌ Don’t leave chaos YAML in Git without cleanup logic
+
+⸻
+
+🧠 Simple Mental Model
+
+* Plan A = Push
+    * You control start + stop
+* Plan B = Pull
+    * Cluster keeps enforcing state
+    * You must design lifecycle carefully
+
+⸻
+
+📌 Final Priority Order
+
+1. ✅ Add secrets
+2. ✅ Implement Plan A workflow
+3. ✅ Test GitHub Action end-to-end
+4. 🚧 Keep Plan B design in progress
+5. ⚠️ Validate chaos lifecycle before committing to Plan B
+
+⸻
+
+If you want, I can next:
+
+* ￼ Draft the exact GitHub Actions YAML for Plan A
+* Or ￼ help you design safe lifecycle handling for Plan B (this is the tricky part)
