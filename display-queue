@@ -1,15 +1,295 @@
-#!/bin/bash
+We have a huge migration, uh, that I'm, like, trying to push the card in, uh, so I just dropped out of that meeting. Sorry, I was literally... Yeah, I know worries. 
 
-# Check if there are any PipelineRuns
-if kubectl get pipelinerun &> /dev/null; then  # Suppress output and check the return code
-    echo "PipelineRuns found. Deleting specific PipelineRun..."
-    kubectl delete pipelinerun appbuild-run-d92a83ed-949f-488c-b6f0-a25e8a492ad7mz5vq
-else
-    echo "No PipelineRuns found. Deleting cleanup job..."
-    kubectl delete job pipelinerun-cleanup-28617917
-fi
+We literally just started, so don't worry about it. Nice. Oh, okay. 
 
-echo "Done!"
+Nice. Uh... I... uh, supper shot something yet from yesterday. 
 
+I connected with him. And we know we had some questions for you. Tommy, just to double check. 
 
-kubectl delete pipelinerun $( kubectl get pipelinerun -n tekton-pipelines| grep -i 12H | cut -f1 -d " ") -n tekton-pipelines
+We're still aligned with the plan A and plan B. We discussed a week ago. Yeah. So, yeah, so Prashant threw up a big note in there, asked me to review it. 
+
+Hold on. I'm just trying to look for that message, kaosk. I was planning. 
+
+Okay. So I was a little bit confused. Okay, so I know you got the lead on your presentation, right? 
+
+And I know if we go back a few weeks ago, when we last chatted, there was a conversation around a tactical solution so that it doesn't disrupt your kind of your flow, so that for your presentation, and then kind of move it towards the target state. Um, I don't know if that meeting ever happened. I'm not part of the invite list, so I don't know. 
+
+And I haven't been able to make the Thursday call, it's two weeks now, so I had some prior engagements. Uh, well, just to answer, um, we're really, like, when it comes to division, for the security tummy, like, you're definitely the one who's gonna tell us, like, if it's their model or not, I totally appreciate, uh, when we got on the call and you said, hey, I get it. Like, for your demo plan A is gonna unblock you, um, I definitely appreciate that, but I did confirm with Prashant that, you know, we all we all agree that plan B was what, I think, ultimately was the scalable format for us. 
+
+Um, so Prashant worked on plan A and B, and we just wanted to check with you, you know, uh, if that would be okay with you. Okay, so that's the thing. So, if it didn't disrupt you, though. 
+
+So that's why I was saying, like, I wanted to make sure that you're successful, 'cause I remember clearly saying something like, Erin doesn't give a shit, and I think I use those words exactly, uh, about pen and ops, and with that stuff, right? It was the more demo, the capability, right? This is what happens, right? 
+
+It's kind of hands off, and there's a vision behind all of this. The fact of how we implemented it behind the scenes, right, really is not, I think part of that, them, might come subsequent questions and whatnot. We're gonna be asked for diagrams, or what. 
+
+That was a separate conversation. So... For me, that's why I was proposing A and B was, I didn't want to disrupt your demos, since you did take an approach with cube cuddle commands locally. 
+
+I remember you saying using your credentials to kind of get this working on the name space, right? So, uh, and that's why I kind of, like, took that route. Ultimately, if we could go to Target State, which is what I was saying. 
+
+We have to move the art back that you currently had in your tenant namespace, move that to the art back, to come in our back. Uh, you know, Prashant, the one that we manage, all the other CRDs, like to move it over there, right? And then get some close to real bindings, names, space, by names, space, to kind of say, hey, this person can now, view these things. 
+
+And then, ultimately, 10 it offs, basically, when your drag and drop it, those files, in the 10 it offs, we go, they'll be able to sync, both delete and apply, right? So, um... Pablo, I know that you got postponed a little bit by a couple of weeks, so if the plan B works for you, and it doesn't disrupt your demo, and there's not too much fanacling to do to get it to work. 
+
+Then let's aim for B. If you're in a situation where you're comfortable for the demo, and then you want to pivot to target state, let's go down. Yeah, yeah. So that's... this up to you, right? 
+
+My vision was dropped out that we should be ten at ops, right? But, yeah. I also want you to be successful at them, right? 
+
+Yeah, yeah, yeah. So, so, totally, no. Let me give you an honest answer. 
+
+Okay. Right now, like, I'm working in a battle against time, just to make sure that we can demo the get of action, right? And to end on the demo. 
+
+They're totally happy with what we're doing at a, you know, to 20,000 feet you. And I totally agree with you on the state that you do want. You know what I mean? 
+
+I'm COVID. Now, plan A is the shorthand that gives us the most observability. Plan B is the most scalable, but gives us less observability. 
+
+I would be happy if we could get Plan A so that I can test it before the end of the week. That would be amazing. That's a weird trying to target Prashant and myself. 
+
+But as I explained to Brashan, I'm happy to do both, Tommy. Like, if it's fine for us to get the demo and also work on the correct state. Um, that would be good for me, because then I can also start testing the observability, which is what follows right after this part. 
+
+Okay. Because, as I mentioned, the time bound chaos versus the applied, right? Sorry, what? 
+
+Yeah. So, based on your time crunch, right, is it safe to say that then we should stick with Plenty, or at least now for your demo? Right? 
+
+But not as our final solution. Yes, yes. That would be correct. 
+
+All right, so let's go for that then. Yeah, uh, but I did, like, Prashant and myself definitely heard you, um, and understand that plan B is what we ultimately want, and we also went ahead and studied to confirm that plan B will also be respecting the Kyverno policies, right? We had the question about, you know, apply versus flux apply, but they both follow the same safety standards. 
+
+Okay. Cool. So we can do both. 
+
+That's my point, but, yeah, in the short term, if you can unblock us for A, and we can test this get up action, then we should be good to go for me to also, like, be able to work with that Prashant in the middle. Okay, so now, what it is that you need me to physically do, A, what are we trying to do here? Which is what your green light. 
+
+Oh, yeah, but that was fine. That's why I wanted to make, I wanted to see, it was Plan E, A, or B, or is it A, goes into B, A, or? When I was reading for Sean's comments, I didn't get a chance to book a call with you folks, and so you did it before I did, but... 
+
+Yeah, and I do want to show you something, if I could take the screen for one second. Yeah, go for it, 'cause I'm trying to look to see if I need to look out for a repository with the secret. Okay, so, Prashan, you added the secrets already in the Ghetto Rebo? 
+
+Mm mm. No, no, no, generation. We need to add them. 
+
+I don't have a permission to access the settings in the report. Okay, so it's not Brooklyn, we need a good subscription ID, they have... Okay. 
+
+And would these be org level, or directly just in the secrets, is this scalable, or is this just for the demo again? Uh, for now, and, like, when we drop that revil, we get rid of it later. How was that funny secret part gonna look holistically? 
+
+Is that a question for me or for person? anyways, right? So right now I'm looking at this chap right here, right? 
+
+I think clusters specific, and just, you know, like you said, like if this is not the target states on me, then just for the short term, I think I agree with that. Okay. Bushan, I can flip you as an admin. 
+
+I think it should work. Just, I'll let you do it so that you don't know. no, you know what? There's nothing sensitive in here. 
+
+All right, so just dump it to me somewhere personally. Yeah, yeah, because I was looking over his own password. So dump me the non-sensitive information and I'll create the 4 keys directly in and in your EDF Tennant. 
+
+Yeah. So at least this way you'll get unblocked. Yeah sure. 
+
+And yes, Tommy, I think this one year is all the our back stuff, so this is fine. You don't need me for that. Yeah, this is for the family. 
+
+Yeah. Uh, Pablo, I think you were gonna share, right? Yeah, yeah, I just want to cover this for one moment. 
+
+Um, so... Uh, if you can see this explanation, I want her to have this ready for this call. The reason being is that both plant A and B actually share a lot of the work, Tommy, you know, A and B only different, how we're authenticating to make the change, right? 
+
+But both paths still have the pre-flight and the part where we create the gamel, except that on A, we just apply it, whereas on B, we actually push it in. Right? So that's what causes a little bit of a difference and something that I'm interested to test, you know, how the lifecycle. 
+
+Day you're pushing, right? A is applied. A is Q code. 
+
+Okay, is good. Yeah, exactly. So that's pushing, the other one is pulling on the tenet ops, right? 
+
+The other one is via flux, yeah. Yeah, so that's cool. So, yeah, both of them actually go through the same, because we are constructing the Yamo, right? 
+
+Um, so I, the only thing I don't know about plan B is like the lifecycle, the file itself. curious to note, but since plan B requires time bound, it just works differently, right? So I think the vial would stay there, but the time boundary would already have been spent. So that's something I'm curious to study. but just wanted to make sure to know. 
+
+It's no different than you doing, cube cuddle applied. So when you did a cute cuddle apply of, let's say, I'm gonna say stress test, right? And you left that file there, and you went home, you went out, and you came back the next morning, right? 
+
+What was that file doing? Was the stress still continuing? Oh. 
+
+Because if the stress test is continuing, then then we got a problem. No, um, but you're asking me, like, when we applied it directly, how it went? Well, yeah, because, so, you gotta think about flux now. 
+
+Flux is like you're deploying Yamos and your real PDF services team, right? You got a deployment Yamo, that spec is there persistently, right? And if that spec is there persistently, what is it doing? 
+
+My deployment is there. My replicas are there, my HPAs are there, my conflict maps are, you get it? Yes, I get it. 
+
+I get it. If you're going into the poll model, which is tenant ops, right, which is essentially saying, hey, I have pod chaos and I have stress chaos, 6 et, et cetera. When I pull those files into my name space, They're there indefinitely. 
+
+What is the indefinitely actually mean? That's exactly what I just mentioned. The lifecycle of what gets supplied. 
+
+So for B, it's time bound. That's my vision here. That's what I didn't understand though. 
+
+Oh, that literally runs only for a specific time frame. It won't activate past the time. Don't don't actually in plan A, the popular is trying to do, like he create the chaos stress manifest file and he waits for some time, like 60 seconds or sometimes on the pipeline, and then he's removing. 
+
+Yeah, then he's doing the cube city. delete the chaos stress. But with the flux, which is the target state, right? Which is pull model, right? 
+
+That specets and stuff. And that's why I'm not understanding what the time bound meant, right? Is it time bound meaning run for 5 minutes? 
+
+Well, run for 5 minutes. What does it do an hour later, right? I see, I see, I see. 
+
+I was expanding the danger of the chaos that the file's there, but it can only run for one time slot. But you're talking about stage 3 cleanup. That's what you're saying. 
+
+Uh, more about the, with the gap between 2 and three. So I'm at two, I did that now, right? did a flood. 
+
+Okay, so you created that template, the spec. I'm gonna merge it in. Cool. 
+
+Now it's gonna, you know, a few seconds later, Flux does his magic. It pulls those 10, 15 different types of scenarios onto my name space. Now they're time bound for five, 10 minutes, right? 
+
+Now, I forgot to do stage three, which is the rollback, which means essentially get rid of the files, but that our intended ops, which will essentially, behind the scenes, flux does it delete, right? So the gap between 2 and three. 5 minute thing running now, and it's gonna run again in a few minutes, and it's gonna run again in a few minutes, and run again in a few minutes, which means that if I forget to do the revert, basically, at that bull request, and that merge, I mean, pod chaos, mode, indefinitely. Yeah, so so that's, so I'll double check just in case I'm wrong, but what I have, it's, it's date time balance. 
+
+All right, cool. It's like only for the window that this was pushed. Is it allowed to run? 
+
+Fantastic. Yeah, that's what I meant. Sorry, I hope that's okay. 
+
+So that's what I'm trying to do. Like, if I'm wrong in that, then I'll definitely, you know, but that's my vision here. for Flo B, it's kind of like we run it and forget because it can only run in certain time and then it has to clean up after. So that's what I explained that in the beginning, that I'm curious to see how this cleanup works. 
+
+Um, so right, uh, related to your question, Tom. Okay, that's it. And I mean, theoretically, you get to throw with your current scenario, right? 
+
+which is cute cuddle apply and then just take off, go for around the golf, come back later, right? And what happened, right? But it just keep running. 
+
+Yeah, but definitely I do want to see it within the constraints of the get of action. Um, so that, you know, we see it actually executed. But, yeah, you're right. 
+
+Definitely some small area to learn and push myself at the same question. Yes. We're like, hey, like, well, this is actually respect our security. 
+
+You know, like... Sorry, man. Not sure. 
+
+It might have been just, uh, 100%. That was an awful mute person. Starting flight. 
+
+Okay. No, no worries, Bush. Okay, cool. 
+
+So then, Prashant, do you want to confirm with me once we're good to go with this, and we'll do the get have action test? Yeah, just send me the, uh, Prashant, the, uh, whatchamacallit, the, the 4 things. Sure, Tommy. 
+
+And I'll upload them. I'm due for a cyber arc refresh, because I'm not able to. It seems like I'm in a little bit of a weird situation. 
+
+So, send me them off, and I'll just go into the tenant ops report, and I'll add them there. Shoot, Tony. Like in the guitar action, we are trying to log into the cluster using the Ajuru. 
+
+Like I share my screen, Tommy, for a second. Yeah. We are trying to do this, Steve. 
+
+Where's this, where's this now? This would be part of the... No, it's just I copy paste to the wrong location, but it will go into the going to the PDF services or a common manifest gets. 
+
+No, no, no, go, go, no. No, those are not, it's gonna go into that tenant of workflows or the workflows into the PDF. No, so the tenants themselves, if you look at all the tenants, there's very minimalistic Yamo in their name species. 
+
+Okay. So, theoretically, nobody has the capability, except the platform amendment team, to modify any workflows at all. So, the way I've done it is just because if you are doing anything special in here, the tenant workfall, the one that you're currently on right now, is hidden away from all the tenants. 
+
+They don't actually get to see the cold, right? Okay. And all they see, if they were to click on their own tenant namespace and click on workflows, is very small, saying, It's trying to go to tenant workflow slash the file name at, and then the version, right? 
+
+Maybe name or or time, whatever it is that you're doing, right? So, um, I would move things away, but if it's too complex for you to move away, then just keep in mind that every tenant that you're doing with this is gonna have to have those. Independent piece of gold, and every time you got it fixed, you're no longer fixing one place, which would be the tenant ops workful one. 
+
+Now you're going to have to iterate through every single one of our 110 game spaces. and update the Yamo Falls accordingly. Right? So that's why it's better to keep the pennant one, so the one on the Pablo PDF, very minimalist that says, I need pipe parameters, and I'll invoke my reusable workflow. 
+
+And this where your reasonable workflow, as it grows and changes over time, unless you have a new signature, so that the parameters, income, parameters, or secrets, theoretically, everything that happens inside there is completely agnostic away from the users. You can putz around, you can add some more shells, you can add some extra stuff. And they'll never know what's happening. 
+
+So you can grow and change your capabilities over time, as long as the signatures don't change. Which, again, if the signatures change, I have the script, that I blast the way through every single tenet ops repo, look for a specific Yamo pile, and I update it with the new signature to include something new, or remove something, or default or something. You know what I mean? 
+
+Oh, yes, but theoretically, the code code doesn't matter. You abstractly see all this? Let's say you want to add some more verbosity, whatever. 
+
+You don't have to go through every single tenant repo. Right? You can add the extra parameters, you can remove the noise, right? 
+
+Let's say you find out and say, oh, shit, I shouldn't be telling people something in here, right? You just comment it out and they're never gonna see it again. It's in one place. 
+
+Yes, yes, Tommy, sure. Then I will go with the tenant workflows. So in here, you're just doing an easy bugging. 
+
+What are you going to do with the easy log and stuff? But the cube cuddle, like, what are we trying to do in that part? Uh... 
+
+This is for the plan A stuff, right? Yes. Is this just from the example? 
+
+This from the example, though, right? Yeah, okay. This is just the examples from before. 
+
+I think you found a better way to do that. Okay, cool. This is the OEIDC that you put in the chat, right? 
+
+Do you want to cover that with Tommy really fast? But LADC should be the line 81 to 87, right? Yes. 
+
+So, uh, actually, my question was, using this if you log in. to the cluster, we could able to run the cube cuddle commands, like apply. So, now, if you do that, we have 100 tenants, which means 100 tenant repos. That means you have to figure out a way to get Federation for 100 people. 
+
+Oh, okay. Because the, uh the permissions are not cascading. And this is a problem I have with Upendra today with the GM build pipelines. 
+
+He has the authentication to the ACR, okay? And he's the keyholder right now of our new kind, secret, and password. We haven't been able to convert to YDC for an ACR, because we have to go through Singer every single tenant to add that federation. 
+
+And if I remember correctly, Alexi told me there's a limit of 10 or 20 federations. So, like I said, there's 100 of them, uh, and I think the limit was 10, well, we're gonna have to create 10 federations, 10 IDs with 10 and 10 federations each. And then when we get the 101, we're gonna have to create an 11th identity, and add that one Federation, and we have nine more slots available. 
+
+So it was a pain in the behind from that perspective. Again, if this is your quick hit for plan A to get where you need to do, yes, you can do that. Uh, there's probably a support. 
+
+You got to update Alexi's, um, there's an MID under AKS in TPL. You could just add this tenant people in there, you put the branch, which is Maine, you put the get up repo, whatever, and then basically that get up reefboat does the off for you. But like I said, that is not gonna be scalable, 'cause you're gonna be limited, and he probably already is hitting the maximum, as well. 
+
+So we gotta be careful with that. Okay. Yeah. 
+
+So what you're probably gonna have to do for now is the old shitty login way. You can look at plat ops, repo, but the flat ops, or, excuse me. There's a thing called, I think it's called GH workflows. 
+
+And in there you can look for VP and I think you worked with Yvonne on that. You'll notice that BPA has an matrix, okay? And that matrix references an environment variable, an environment with secrets. 
+
+And basically it says, hey, when you told me matrix called Hong Kong UAT, it expected to find in Hong Kong UAT environment, the secret called Azure Credentials, I think it was. And inside actual credentials, it's Klein Eddie, Klein's Secret, tenant ID and subscription. And then he repeated that for all 20 something clusters. 
+
+Okay. Right? And so what you're gonna have to do is basically probably mimic something like that. 
+
+It's gonna be simpler for you because it's all gonna be UAT clusters. So it's gonna be all the choice of UAT clusters, but you're gonna have to pass an additional environment flag so that it goes and pick up that variable from the matrix. I'm just gonna steal the screenshot for one second. 
+
+Okay. I want to go get my credentials, so let's just hope that it works. All right, cool. 
+
+Fantastic. Uh, I think it's called GH workflows. So, you'll see here what, um, I think it was under variable actions, and So, you see here? 
+
+She created an environment called Sandbox, and then in here, there's an MID, an et cetera, et cetera. So now Alexi converted all of these to do that conversion. But there should be still the old environments way here. 
+
+Uh... There's a C prod. Okay, so you did a cleanup, so this is not even a good reference. 
+
+Oh, my God. Oh, yeah, okay, here you go. Perfect. 
+
+What are you left in there? All right, so there's environment, and then there's a cluster name. For example, you're HKDef, right? 
+
+And then they need this one too. All right? And in here, it's basically all the information that's needed, and you'll see Yvonne does a matrix with that, but the matrix is less, less of a conversation, no VPA. 
+
+Right. So it's basically, here's all the items that's gonna cycle through, but it passes this here as an environment variable. See here? 
+
+So that this name here equals this, and using this, it does the login. So now Alexi seems to have updated this stuff now. So it's also using that. 
+
+So, good thing is, is about Alexi, is this GitHub workflow is a catchall for all of the platform stuff. Okay? Um, this is not gonna scale. 
+
+So, like I said, he converted it so cool. It's nice that we're no longer having credentials. I guess he forgot to delete them. 
+
+Maybe? Mm hmm. But anyways, as you can see, you see here how simple it is. 
+
+He did OYDC. Either the context like this, using cube login, and then the next thing after that... it just gets in her case, but you knew its applies and deletes, right? But the problem is, is, like I said, we can set this up for PDF services. 
+
+This is not gonna scale this kind of approach like this. It's not gonna scale for 100 tenants. Okay. 
+
+So, we're gonna have a little bit of a hiccup if we go that route. Okay. But it looks like for the PDF service on Deb, we'll be able to move forward. 
+
+Yeah, for PGI Von Deb, it's one single one, so you could probably work with Alexi to get that federation. There's, um, Prashant in here. Where is it? 
+
+It's a TPL, TPLG, if I'm not mistaken. Speak to Alexi before you touch that, because if he has goals to change these things and add more that are for platform, because I know he's working on a lot of automation work. Okay. 
+
+Um, yeah, I think it's called Health. All right, so here you're gonna go. I think you got here. 
+
+So see what he did here? is already here, Federation, so one, two, three, four, five, six. Theoretically, we can add four more. 
+
+Right? So in here, these are all my custom code things that I built. to support, uh, but you see, here, Kieran added, China. Right? 
+
+So giant can do that similarly. So theoretically, temporarily, you can append the next item in here, call it, you know, MFC, GM, tenet ops, get ops, whatever, and then put your PDF services here. steal this exactly it is, replace this with tenetops, of PDF services, and then run the the MID of AKS, right? And then, right? 
+
+But that is not sustainable. As soon as you're done please remove that. Right? 
+
+Because like I said, he's gonna freak out if we cap out here because then it's gonna break anything else that's needed for platform. Because these here were these were meant for platform tools. Yes, right? 
+
+Giants is ours. That why it's there. But these were all our platform tools that were building, right? 
+
+Okay. Sure, I'll mention him that, uh... Yeah. 
+
+Yeah, just, you know, let him know that, hey, we're gonna do a pilot. We're just gonna use the Federation in there for now. while we work towards Target State afterwards. Yes. 
+
+Sure. Okay. Sure, coming. 
+
+Um, I know your time is super valuable, Tommy, so I definitely want to... No, I got no calls after this. I got no calls after this. 
+
+Good, 'cause I was gonna ask you to stay back for one second if you had a little bit extra time. Yeah, but before that, I wanted to check, since this is a little bit going over my head and how you guys are doing it, does this seem clear to you? Do you want me to set a meeting with Alexi? 
+
+Anything I can do to help? Uh, no, Pablo. I'll work on this on my end, okay? 
+
+Sounds good. All right, will you let me know? I'll be as soon as you're ready, I'll be ready to put the get up action and test it with you, okay? 
+
+Sure. All right. Um, and tell me if you have one second. 
+
+I want to talk about chaos. If you have just one minute. Yeah, let's go for it. 
+
+I'll just date back with Tommy for a second. That's okay. Fantastic. 
+
+All right, thanks, Prashan. Just keep me posted on the, um, keep me posted on the, um, blah, blah, blah, blah. Uh, the the 4 parameters, the 4 vibe of the secrets, and I'll add them up. 
+
+Sure, sure, Tommy. Thank you. Okay. 
+
+All right, no problem. Speak to you later. Bye. 
+
+Thank you so much for your time. Talk soon. Thank you, Pablo. 
+
+Bye.
+
+Summarize this explained what to do now in detail
