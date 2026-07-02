@@ -1,197 +1,39 @@
-This is actually a really solid technical discussion—you just need to distill it into something actionable (and “Leslie-safe” again 😄). I’ll translate this into clear stories + technical summary so you can move fast.
+We created the tool, it is ready for deployment. We were planning the deployment today. It just needs a couple of minor changes to be pushed.  But when reviewing it, One thing which came out of it was the art fact that we assigned for storage accounts. So it, I'm not sure what we currently follow because some cases we give storage account contributed to ACLs. Sometimes we give that to acting SPNs.  It's all over the place. And I'm not sure. I believe we don't have a standard, please correct me if I'm wrong.  But since we are now going to provision through giant. We can try to streamline it with some caveats and see how it goes. Any thoughts, anything that I stated, which is not right.  Okay, so one thing is, as we have with everything else, storage account, there are 2 parts, the control plane and the data plane. So right now, I believe we are allowing app teams to create their own containers through the portal, which, again, goes, which makes the terraform scripts inconsistent because now there is an option to create containers through terraform. However, if somebody creates a primary, it will drift.  So, this, I'm not sure if you've seen this page, but let me know if this will outright cause problems for our teams or if you think we can try it and then see how it goes. First of all, we don't want to allow key waste taxes. Yes, Tony.  Regarding the container creation. I've tried doing hard enforced computer form in the past, but the fact is they run with it and create out of scope sometimes and then it just it eventually does drift like almost 100% of the time. Exactly.  Yeah, so I, you know, for the other environments that I manage, I basically build ADLS for them without any containers through terraform and just let them handle it themselves and just consider that part of the data plan that they themselves manage. And you say they manage, you mean, through the portal or through some SPN or some logic? Yeah, they would either do it through portal or through their own SPNs.  Okay. Yeah, that's what I thought. We are giving both, but we kind of need to, I mean, with this proposal, we kind of force them to use SPN automatic entity, not through the portal.  Now, again, let's see how it goes. First thing, we are not disabling key-based taxes. Do we know that is intentional or we just allow them to use key-based taxes.  Like the templates, I have not seen where we disable the key, we enable the what, and obviously public network access is disabled. But the 1st thing we want to do is enforce on ID-based access and not allow key-based access. So this is something we need to add to our giant template.  So, Prashant, this is currently not there. But 1st thing is, if there's no concerns with this, let's add it to the giant template and going forward, key-based axis will not be allowed. Yeah, I think that's an auto requirement, isn't it?  But it's not disabled in most of that storage it comes. I don't know. Oh, really?  Okay. Yeah. So this is the 1st thing we want to do, where we disable key-based taxes.  Then for control plane, the ACL, we only give redirect access so they can view it, they can check whatever is set up and so on, but the storage account contributor will only need to the terraform SPM and platform engineering team, which means If they need anything which is unplain related approvals or consent, we will have to get involved. This is a change from what we do today because today we are giving this to our team ACLs. It allows a lot of things.  Unfortunately, there is no built-in room which only says you can create containers but not do anything else. So the storage account contributor, they can change a lot of things and we really don't want to give that to TVCLs. So this is probably the biggest impact of this where they can no longer do what they were able to do before.  Now, if they want to create containers, they have to do it either through our giant, there is an option to create it initially. We can extend it in the future to add containers to giant, like they're going to do for cosmos database, but otherwise they can use whatever code they have through SPN or managed identity and create whatever containers they want. It will still drift from a terraform.  Yes, but at least this they have control, they can create it. If they want through code. Now, I know for Ethan, if there is a rag pattern, they need to provide an approval for a private link between storage account and AI search, but that they do not be able to do now because this rule is required.  So again, that's very rare. If they do need it, they can submit an MDR and we can do it on their behalf. So this will no longer be given to act teams.  Any concerns based on anybody's prior experience with that teams. Okay. For storage count contributor, sorry, you're saying?  Yes. Yeah, I mean, that's very rarely needed. I would say.  Okay, all right. So, for the data plan, now for workload, uh, SPN or milestone entity, they will, again, I'm not sure, do we know, like storage account it allows a date blog, it allows tables, cues and file shares. I know blob is used, but do we know if people use cues and tables or we leave it up to the app teams to decide what they want to use?  I think I've seen user tables, but definitely some use files here. Okay, so we can give all these roles to the SPN through our giant, so they'll enter their from a separated SPN managed identity. We can grant all these data planes roles for them.  That way they can do whatever they want from a regional perspective. Okay? Now for ACLs, do we want to give this access to data plane or not?  Right now, it's not configured, but I wasn't sure if you want to allow the app, the ACL members to be able to read the data from these accounts, or we leave it strictly with SPN and manage the identity. I mean, my answer to that comes down to like a risk question, which is not us. not up to us to enforce any, you know what I mean? Like, what's their data and who should be able to view it kind of thing?  That's all. Right now, we are giving this to our team, ACS. No, no, no.  I mean, but that's the, I would think it would be okay unless for some reason they're storing like PII data and stuff that they shouldn't be anyway. I would think read only would be fine and would prevent them from coming and asking us for, you know, to be able to see things. Yes, that list.  Yeah, I was going to say same thing as Frank. It depends on the data classification. So for our side, we don't have any PII, but I can imagine a case where they might.  So maybe we need 13rd kind of perspective on this one, because you might appropriate services, but you might not have the rights to look in there. So, you know, might be different. Okay.  So do we not give it by default and wait for somebody to complain and read the request or we give it by default so they don't come to us, the reader access. I mean, the reader access. Do we do like a lower region, yes, upper region, no kind of thing?  Or is that getting annoying then? Because then it just invites more questions. We can customize it if needed.  Could it be parked for discussion, you know, because there are do so related kind of specifics here? Okay, so maybe by default, let's not give this for now, and that way we give they can only view the control plane and not the data plane. If somebody needs it, maybe then we can engage to do so and have them get an approval because data classification, we don't know and we cannot generalize it.  That way, they can take it up with risk team and then they can come to us. Okay. And for file shares, I believe right now we are using the PTVs, right?  For, uh, PVCs for mounting these storage accountsile shares to AKS, that's outside of this. You're not doing it as part of provisioning a storage app. Correct.  They would have to ask specifically. Okay. Okay.  Okay. So in giant, they can request a file, share, and a size, but if they want to integrate that to their new space, they'll submit a separate FDR for that. Okay.  So that's what is mentioned here. So just to summarize, for now, with the initial release that we will make for storage accounts through giant. The SPN will have storage blog, all these different types of data and claim level contributor access.  It will not have any control plane access. Obviously, they cannot log in. And for ACN, it'll only be reader to the control plane and no leader to data plane.  So I'll update this page. That's pretty much how we'll define it. If they need anything from the plan, the control plane side, which requires an this, only the platform team will have their contributor.  And based on this, we can try to separate, have a separation of duties, have data planes strictly for logic. The biggest thing I see is the country containers through the UI, which I have seen people do. So if they want it, we can either extend giant or they can do it through code.  But let's see. Once people use this, the provision based on their experience, we can revisit this. But right now, at least this will limit, I mean, it will make it more aligned with everything else that we provision for app teams.  Okay, any questions or concerns? Okay, so present, after this call, let's update the template. Like, if you can update the different templates that you have with these things. just to make sure that we are disabling key-based taxes.  And then on the court side, I don't think any changes are needed. We are not granting anything more. So everything should be aligned.  Once we have this, we can plan a production release today. And uh, try and we can include your DDA of the snow, no, the CLMI, MCB 7 in this as well. Okay.  Uh, do you need me to create a... Do we have a story, a good story to use, or should I just grab something? You have...  Something, or presents, Tony, we can use whatever, keep people up, tough, for story different. Okay. Okay.  Okay. Thank you. And one more topic.  Techniche. So I did mention this yesterday. So this is mostly for people who are familiar with the 8th and BTLD book.  As you know, now in Q3 they're looking. We did this with giant, where we will allow divisioning or onboarding into Athen to giants, and after what we did with AKS. So one of the 3 requisites is aligning our TTL scripts similar to what we did with AKS.  But here it's a little more different because internal app gateway, it is one per region and all app teams, they go as listeners into the same app gateway. Unfortunately, the way this is main bra. For each environment, as you can see, there is a name and variables, and every time we have to add a new listener.  This file has to be reedited. It's almost 2500 lines for each environment, each region, based on how many listeners are there. The most commonly used regions, the primary regions, it's huge.  So this is very difficult to read, very difficult to update and also giant cannot update this. It's human, it's huge. The number of tokens will increase.  So for this reason. So if you see this PR, so this currently it's similar to what George did with AKV, it's just that everything now has to go into the same app gateway. It's not like a separate taking per file.  So the structure is similar. There is a app gateway under loader, which pulls data from each of these CML files. So for example, if I go to this file, going forward.  When we need to add a new application like a new listener and a host name and everything, we just need to create a new file here on inside applications and just give a different number because it loads this in the sequence in under the listener and other things. You just keep it unique and we just need to fill. There is a template.  So this template can be used by us to manually populate or create a copy and edit it. Oh, the tasks don't change. Whatever we are doing today, everything is in place.  We need to create a listener, a new certificate, and a new host name and everything, but once we have this in place, we just need to create a new file, which is probably just about 50 lines, as opposed to updating a 2500 line script. And this, once this is available, giant can follow the same approach it's doing with AKVs. It will pick the template, create a copy, replace the values, and put to create a PR.  So this will align with both manual as well as uh, The tool-based approach. But here, this is a lot more easier to manage, and we can keep it for the scope of change just limited to one Yaml file, which is easier to handle from both automation and manual purpose. Any questions?  I know Ramesh, you ran tariff. I ran the plan, everything looked identical between Maine and this brand. Nothing changed. or the change is the same, and Ramesh stand applied for Indonesia, and it looked good.  So there is no impact there either. So, I know, I mean, uh, because of the number of changes, I've taken a backup, but this updates all regions and environments, um, thanks to plot goals, but, so for now, the only thing is, let's use this for, uh, all the internal abkitway related enhancements. So just be aware that use the giant readiness branch and apply using this.  If you notice any issues, let me know, but otherwise once we are comfortable, we can merge this to name and use this going forward for instead of using the main branch. As you can see, this deletes the main dot TF in the future we can rename, this it needed. But this is the 2500 line scripts which no longer will be used.  So it's a lot more simpler to manage. And we can use this going forward for all internal app gateway vigrations. Oh, can we stop any onbodies, you know, until we finish this, you know, running in intuity and production?  So I think it doesn't take more than a week, you know, for us to run in all the environments, okay? All the regions. So, yeah, because, uh, yeah, since we are done in single brands, right, you know, then we have to finish as a day as possible, this, uh, uh, you know, the factor.  Otherwise, like anyone to the area, then again, you know, the sinking back is really difficult. Right. I think there are a couple of them in flight.  One of them is from Kevin. And the other one, Tiger, picked it up. So we can see, we can have them make the changes here.  And it'll be a good way to test the new process as well. And then we can, um, so I know we tested Dev Indonesia. We can try a different environment, but let's use this as the 1st branch, instead of name, to make the changes, instead of creating a new feature branch, or create a feature branch out of this branch, and then let's test it.  Once we are okay, maybe in a week or 2 we can merge it to main, but let's use this as, I think this is main for now. Okay, I have learned teleform applying all the all the regions now in the table. Oh, the other such people from there.  So I saw the I can help them, so. Back in Health also looks fine. So, okay.  In that Canada, US and Southeast Asia. All four. Yes, including US.  Okay, IE US in Los Angeles. Okay, good. Okay.  So, yeah, maybe if you want to, again, not urgent, but if, as part of any change, when we want to push it to UVT and fraud, we can also push that, and I know Tiger has just started one, so we can have him create this in depth. I think it is US or Canada is Canada. So he can add it here and test it.  Once it's good, then maybe next week we can merge this to name. And then we can use this for all future changes. Yeah.  Okay. Yeah, can you want to notify? I'll let title up.  I usually chance this call, but I'll let him. Oh, okay. Thanks, Ramesh.  And to keep other things separate. So similar to this, we have vast. We have AKV for Ethan, as well as we have ATM control clean on boating.  All of that is similar to the 6 in a single sign. So I'll split that, but I'll put it into 3 other feature branches so that we can track it separately and we can merge it separately. Once all those are also in place and we merge everything to main, it is more modular, and we can start working on giant to integrate and create tools.  So this is a prerequisite and yeah, now this will help us in managing this pective. Okay. Any questions or any concerns?  Okay, it's not then, uh, 4%, if you can update the templates and let me know, I'll create the TR for the services, and then we can plan the production release frank once you have to change the question. Should be a Prashant. you send me the store. I can't see any of your stories in Jira to just go pull it myself.  For some reason you're invisible to me. Uh, I think. No, in present print, I think I don't have anything.  I need to clean the or. That would make sense. Yeah.  And we use a done story or it has to be in progress in current threat. I mean, I'm not gonna enforce any sort of rule here. No, if there's no rule, then maybe for something, you can share one which you worked on.  I created one that I was going to use for that story, for the, the real, um, for creating a real chain. I can go grab that one. I don't know.  I'm not seeing it right now, but it's for a fraud deployment for what I call it. You can use that. Yeah, when they go find that.  Okay, sounds good. Okay. Okay.  Okay. Thank you and thank you for the discussion. And tomorrow is the holiday here in the US.  If there's anything else, let me know today. Otherwise, have a good weekend. Thank you.  Thank you. Thank you. Thank you. 
 
-⸻
 
-🧠 Clean Summary (what you actually decided)
 
-You have two approaches for chaos experiments via GitHub Actions + Flux:
 
-✅ Plan A (Short-term / Unblocker)
 
-* GitHub Actions directly runs:
 
-kubectl apply -f chaos.yaml
 
-* Requires:
-    * Elevated permissions to the cluster (via repo / service account)
-* Pros:
-    * Immediate feedback + monitoring
-    * Easy to demo
-* Cons:
-    * Breaks GitOps model (less “pure”)
-    * Security concerns (Tommy doesn’t love it)
 
-👉 Status:
-Tommy reluctantly OK’d this as temporary to unblock you
 
-⸻
 
-🚀 Plan B (Preferred / Long-term)
 
-* GitHub Actions:
-    * Commits a Chaos CRD (Custom Resource Definition) into repo
-* Flux:
-    * Detects change
-    * Applies chaos experiment automatically
 
-👉 You were trying to recall the term — you’re right:
-✔️ CRD (Custom Resource Definition)
 
-* Pros:
-    * Fully GitOps-compliant
-    * Auditable via PRs
-* Cons:
-    * No direct execution visibility
-    * Harder to monitor in real time
-    * Still requires proper permissions setup
 
-👉 Status:
-Needs more setup + coordination (Tommy + Prashant)
 
-⸻
-
-🎯 What You Should Do (practical advice)
-
-You were circling it, but here’s the blunt version:
-
-If you wait for Plan B, you will miss your demo.
-
-So your instinct is correct:
-
-* Push Plan A NOW for dev
-* Position it as:
-    “Temporary unblocker, migrating to Flux-based approach (Plan B)”
-
-⸻
-
-📝 Story You Should Add (this is the missing piece)
-
-Story Title
-
-Enable GitHub Actions-Based Chaos Execution in Dev Environment (Temporary)
-
-Description
-
-Implement a temporary solution to execute chaos experiments in the dev environment using GitHub Actions with direct kubectl apply.
-
-This approach is intended to unblock development and demo efforts while a long-term GitOps-based solution (Flux + CRDs) is being designed.
-
-Acceptance Criteria
-
-* GitHub Action can authenticate with the dev cluster
-* Workflow can execute kubectl apply for chaos manifests
-* Chaos experiment successfully runs in dev environment
-* Execution is observable (logs or monitoring available)
-* Access is scoped to dev environment only
-* Security considerations documented
-* Plan documented to transition to Flux-based approach
-
-⸻
-
-🧪 Second Story (Plan B groundwork)
-
-Story Title
-
-Implement Flux-Based Chaos Experiment via CRDs
-
-Description
-
-Design and implement a GitOps-based approach for chaos experiments where GitHub Actions commits time-bound Chaos CRDs to the repository, allowing Flux to reconcile and execute experiments automatically.
-
-Acceptance Criteria
-
-* Chaos CRD format defined
-* GitHub Action can create/update CRD manifests
-* Flux detects and applies CRD changes
-* Time-bound execution mechanism defined
-* Validation that chaos experiment runs via Flux
-* Approach documented (including limitations on observability)
-
-⸻
-
-⚠️ Subtle but Important Technical Gap
-
-One thing your convo hinted at but didn’t fully resolve:
-
-👉 Both A and B still require permissions
-
-Even Plan B:
-
-* Flux needs RBAC to apply CRDs
-* Repo access + cluster reconciliation must be configured
-
-So don’t assume B avoids the access problem—it just shifts it.
-
-⸻
-
-💬 What You Should Say to Prashant / Tommy
-
-Keep it simple:
-
-“Let’s enable Plan A in dev to unblock the demo. We’ll treat it as temporary and continue working toward the Flux-based CRD approach as the long-term solution.”
-
-⸻
-
-If you want, I can also:
-
-* Draft the actual GitHub Actions YAML
-* Give you a Chaos Mesh CRD example
-* Or map this specifically to your stack (Azure + Flux + New Relic)
-
-Just tell me 👍
-
-
-
-
-
-
-
-
-You’re very close, just tighten the wording a bit and fix the terminology:
-
-* It’s Custom Resource Definition (CRD), not “cluster resource definition”
-* And yes — the CRD must already be installed in the cluster (via Chaos Mesh), otherwise Flux can’t apply the custom resources
-
-Here’s the corrected and cleaned-up Plan B 👇
-
-⸻
-
-🚀 Updated Plan B (Flux + Chaos Mesh CRD)
-
-Description
-
-Implement a GitOps-based approach for chaos experiments using Flux and Chaos Mesh.
-
-In this model, the Kubernetes cluster must have Chaos Mesh installed, including its Custom Resource Definitions (CRDs). GitHub Actions will commit Chaos Mesh custom resources (e.g., experiment manifests) into the repository. Flux will detect these changes and reconcile them by applying the resources to the cluster, triggering the chaos experiments.
-
-This approach ensures full alignment with GitOps principles, where all changes are declarative and managed through version control.
-
-⸻
-
-✅ Acceptance Criteria
-
-* Chaos Mesh is installed in the cluster, including all required CRDs (Custom Resource Definitions)
-* Flux is configured to monitor the repository and reconcile changes to the cluster
-* A valid Chaos Mesh experiment manifest (custom resource) is defined
-* GitHub Action can commit/update the chaos manifest in the repository
-* Flux successfully detects the change and applies the resource to the cluster
-* Chaos experiment is executed in the target environment (e.g., dev)
-* Time-bound or controlled execution is defined within the manifest (e.g., duration, schedule, or TTL)
-* Changes are auditable via Git history (PR-based workflow preferred)
-* Limitations in observability (vs direct execution) are documented
-* RBAC and permissions required for Flux to apply Chaos Mesh resources are validated
-
-⸻
-
-🧠 Optional Clarifying Line (if you want to make it extra clear)
-
-You can add this to the description if needed:
-
-“This approach assumes that the cluster is already bootstrapped with Chaos Mesh and its CRDs, as Flux can only reconcile resources that the Kubernetes API recognizes.”
-
-⸻
-
-If you want next level polish, I can also:
-
-* Give you a sample Chaos Mesh experiment YAML
-* Or show how to structure the repo so Flux picks it up cleanly (very important for demos)
+Here is a concise summary of the deployment meeting and a clear list of what you need to update before the production release today.
+## 📋 Meeting Summary
+The team is prepping a production release today to deploy a new infrastructure provisioning tool named **Giant**. The discussion focused on two major areas:
+ 1. **Standardizing Storage Account Governance:** Enforcing a consistent security baseline and explicit separation of duties for storage accounts being provisioned via Giant.
+ 2. **Refactoring the Application Gateway:** Streamlining the massive 2500-line main.tf file into a modular, YAML-driven approach to prepare for future automation.
+## 🛠️ What You Need to Update
+### 1. Storage Account Templates (Action: Prashant / You)
+You need to update your Giant Terraform templates to enforce the new governance model:
+ * **Disable Key-Based Access:** Explicitly set templates to enforce **Identity-Based Access only**. Public network access must remain disabled.
+ * **Control Plane Restrictions:**
+   * Assign **Reader** access only to App Team ACLs so they can view configuration in the portal.
+   * Restrict **Storage Account Contributor** strictly to the Terraform SPN and the Platform Engineering team.
+   * *Note:* App teams will no longer be able to create containers via the Azure Portal UI. They must do it via code (their own SPN/Managed Identity) or through future Giant extensions.
+ * **Data Plane Roles:** Grant the workload SPN/Managed Identity full data plane roles by default (**Storage Blob Data Contributor, Queue, Table, and File Share** roles) via a comma-separated list in Giant.
+ * **App Team Data Plane ACLs:** **Do not** grant data plane reader access to App Team ACLs by default due to data classification risks. If a team requests it, they must get Risk/Identity Management approval first.
+### 2. Internal App Gateway Refactoring (Action: Coordination with Tiger/Kevin)
+ * Do not use the main branch for upcoming internal Application Gateway enhancements.
+ * Use the **giant-readiness branch** going forward.
+ * When onboarding new listeners, instead of modifying the 2500-line script, create a new **~50-line YAML file** under the applications folder using the provided template.
+ * Coordinate with Tiger (working on Canada/US) to ensure his current in-flight changes are built off this new branch to test the process before merging it back to main in 1–2 weeks.
+### 3. Release Tracking & Jira (Action: Frank / You)
+ * Coordinate with Frank to grab an active or relevant Jira story to tie to today's production deployment script, as Prashant currently does not have an active story in the current sprint.
+Are you handling the template updates yourself, or is Prashant updating them before you create the final Pull Request for the release?
